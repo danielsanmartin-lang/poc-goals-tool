@@ -17,18 +17,15 @@
       onerror="this.style.display='none';document.getElementById('lf').style.display='block'">
     <span id="lf" style="display:none;font-size:17px;font-weight:800;color:white;letter-spacing:-.02em;">zepo<span style="color:var(--teal)">.</span></span>
     <div class="tb-sep"></div>
-    <span class="tb-title" id="topTitle">PoC Kickoff Agreement</span>
+    <button class="hbtn hbtn-ghost" id="navHome" data-en="Home" data-es="Inicio">Home</button>
+    <button class="hbtn hbtn-ghost" id="navProfile" data-en="Profile" data-es="Perfil">Profile</button>
+    <button class="hbtn hbtn-admin only-admin" id="navAdmin" hidden data-en="Admin" data-es="Admin">Admin</button>
   </div>
   <div class="tb-right">
     <div class="lpill">
       <button class="lbtn on" data-lang="en">EN</button>
       <button class="lbtn" data-lang="es">ES</button>
     </div>
-    <button class="hbtn hbtn-ghost" id="navList" data-en="POCs" data-es="POCs">POCs</button>
-    <button class="hbtn hbtn-ghost" id="navNew"><span>＋</span><span data-en="New" data-es="Nueva">New</span></button>
-    <button class="hbtn hbtn-ghost only-admin" id="navAdmin" hidden data-en="Admin" data-es="Admin">Admin</button>
-    <button class="hbtn hbtn-ghost only-poc" id="saveBtn"><span>💾</span><span id="saveLbl" data-en="Save" data-es="Guardar">Save</span></button>
-    <button class="hbtn hbtn-teal only-poc" data-action="export"><span>↓</span><span data-en="Export PDF" data-es="Exportar PDF">Export PDF</span></button>
     <span class="tb-user" id="userEmail"></span>
     <button class="hbtn hbtn-ghost" id="logoutBtn" data-en="Log out" data-es="Salir">Log out</button>
   </div>
@@ -47,7 +44,10 @@
       </div>
       <div class="auth-field">
         <label data-en="Password" data-es="Contraseña">Password</label>
-        <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••">
+        <div class="pw-wrap">
+          <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••">
+          <button type="button" class="pw-eye" data-eye="loginPassword" aria-label="Show password">👁</button>
+        </div>
       </div>
       <div class="auth-err" id="loginErr" hidden></div>
       <button type="submit" class="auth-btn" id="loginBtn" data-en="Sign in" data-es="Entrar">Sign in</button>
@@ -65,14 +65,53 @@
     <form id="pwForm">
       <div class="auth-field">
         <label data-en="New password" data-es="Nueva contraseña">New password</label>
-        <input type="password" id="pwNew" required autocomplete="new-password" minlength="8" placeholder="••••••••">
+        <div class="pw-wrap">
+          <input type="password" id="pwNew" required autocomplete="new-password" minlength="8" placeholder="••••••••">
+          <button type="button" class="pw-eye" data-eye="pwNew" aria-label="Show password">👁</button>
+        </div>
+        <div class="pw-meter" id="pwMeter">
+          <div class="pw-meter-track"><span id="pwMeterFill"></span></div>
+          <span class="pw-meter-lbl" id="pwMeterLbl"></span>
+        </div>
       </div>
       <div class="auth-field">
         <label data-en="Confirm new password" data-es="Confirma la contraseña">Confirm new password</label>
-        <input type="password" id="pwConfirm" required autocomplete="new-password" minlength="8" placeholder="••••••••">
+        <div class="pw-wrap">
+          <input type="password" id="pwConfirm" required autocomplete="new-password" minlength="8" placeholder="••••••••">
+          <button type="button" class="pw-eye" data-eye="pwConfirm" aria-label="Show password">👁</button>
+        </div>
       </div>
       <div class="auth-err" id="pwErr" hidden></div>
       <button type="submit" class="auth-btn" id="pwBtn" data-en="Save & continue" data-es="Guardar y continuar">Save &amp; continue</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══ PROFILE SETUP (primer acceso) ══ -->
+<div id="view-setup" class="auth-wrap" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-logo">zepo<span style="color:var(--teal)">.</span></div>
+    <div class="auth-title" data-en="Complete your profile" data-es="Completa tu perfil">Complete your profile</div>
+    <div class="auth-sub" data-en="Tell us who you are to finish setting up your account." data-es="Cuéntanos quién eres para terminar de configurar tu cuenta.">Tell us who you are to finish setting up your account.</div>
+    <form id="setupForm">
+      <div class="auth-field">
+        <label data-en="Full name" data-es="Nombre completo">Full name</label>
+        <input id="setupName" required placeholder="Jane Doe">
+      </div>
+      <div class="auth-field">
+        <label data-en="Role" data-es="Rol">Role</label>
+        <select id="setupRole" required></select>
+      </div>
+      <div class="auth-field" id="setupOtherWrap" hidden>
+        <label data-en="Specify your role" data-es="Especifica tu rol">Specify your role</label>
+        <input id="setupOther" placeholder="Your role">
+      </div>
+      <div class="auth-field">
+        <label data-en="Department" data-es="Departamento">Department</label>
+        <select id="setupDept" required></select>
+      </div>
+      <div class="auth-err" id="setupErr" hidden></div>
+      <button type="submit" class="auth-btn" id="setupBtn" data-en="Save & continue" data-es="Guardar y continuar">Save &amp; continue</button>
     </form>
   </div>
 </div>
@@ -119,6 +158,26 @@
   <div class="list-table" id="admin-users"></div>
 </div>
 
+<!-- ══ PROFILE ══ -->
+<div id="view-profile" class="page" style="display:none;">
+  <div class="list-head">
+    <div>
+      <div class="list-h1" data-en="My profile" data-es="Mi perfil">My profile</div>
+      <div class="list-hsub" data-en="Update your name, role and department." data-es="Actualiza tu nombre, rol y departamento.">Update your name, role and department.</div>
+    </div>
+  </div>
+  <div class="card" style="max-width:520px;">
+    <div class="field"><label>Email</label><input id="profEmail" disabled></div>
+    <div class="field"><label data-en="Full name" data-es="Nombre completo">Full name</label><input id="profName" placeholder="Jane Doe"></div>
+    <div class="field"><label data-en="Role" data-es="Rol">Role</label><select id="profRole"></select></div>
+    <div class="field" id="profOtherWrap" hidden><label data-en="Specify your role" data-es="Especifica tu rol">Specify your role</label><input id="profOther" placeholder="Your role"></div>
+    <div class="field"><label data-en="Department" data-es="Departamento">Department</label><select id="profDept"></select></div>
+    <div class="auth-err" id="profErr" hidden></div>
+    <div class="admin-ok" id="profOk" hidden></div>
+    <button class="xbtn" id="profSave" style="margin-top:4px;" data-en="Save changes" data-es="Guardar cambios">Save changes</button>
+  </div>
+</div>
+
 <!-- ══ POC DETAIL (formulario) ══ -->
 <div id="view-poc" class="page" style="display:none;">
 
@@ -132,20 +191,17 @@
       <div class="status-pills" id="statusPills"></div>
     </div>
 
-    <div class="db-meta">
+    <div class="db-meta" style="grid-template-columns:1fr 1fr;">
       <div class="db-cell">
         <div class="db-lbl" data-en="Organisation" data-es="Empresa">Organisation</div>
         <input data-bind="company" placeholder="Company name">
-      </div>
-      <div class="db-cell">
-        <div class="db-lbl">Zepo AE</div>
-        <input data-bind="ae" placeholder="Account Executive">
       </div>
       <div class="db-cell">
         <div class="db-lbl" data-en="Kickoff date" data-es="Fecha de kick-off">Kickoff date</div>
         <input data-bind="kickoff_date" type="date">
       </div>
     </div>
+    <div class="db-prepared"><span data-en="Prepared by" data-es="Preparado por">Prepared by</span>: <span id="preparedBy">—</span></div>
   </div>
 
   <!-- 1. CONTACTS -->
@@ -296,20 +352,10 @@
     </div>
   </div>
 
-  <!-- EXPORT -->
-  <div class="export-card">
-    <h3>✅ <span data-en="Ready to share" data-es="Listo para compartir">Ready to share</span></h3>
-    <div class="export-sub" data-en="Export as PDF to send to the customer or attach to the deal in your CRM." data-es="Exporta como PDF para enviar al cliente o adjuntar al deal en tu CRM.">Export as PDF to send to the customer or attach to the deal in your CRM.</div>
-    <div class="sum-grid">
-      <div class="sum-item"><div class="sum-lbl" data-en="Organisation" data-es="Empresa">Organisation</div><div class="sum-val" id="sv_co">—</div></div>
-      <div class="sum-item"><div class="sum-lbl">AE</div><div class="sum-val" id="sv_ae">—</div></div>
-      <div class="sum-item"><div class="sum-lbl" data-en="Date" data-es="Fecha">Date</div><div class="sum-val" id="sv_dt">—</div></div>
-      <div class="sum-item"><div class="sum-lbl" data-en="Status" data-es="Estado">Status</div><div class="sum-val" id="sv_status">—</div></div>
-      <div class="sum-item"><div class="sum-lbl" data-en="Vectors" data-es="Vectores">Vectors</div><div class="sum-val" id="sv_vec">—</div></div>
-      <div class="sum-item"><div class="sum-lbl" data-en="Users" data-es="Usuarios">Users</div><div class="sum-val" id="sv_usr">—</div></div>
-      <div class="sum-item"><div class="sum-lbl" data-en="Pre-check" data-es="Pre-check">Pre-check</div><div class="sum-val" id="sv_check">—</div></div>
-    </div>
-    <button class="xbtn" data-action="export">↓ <span data-en="Export as PDF" data-es="Exportar como PDF">Export as PDF</span></button>
+  <!-- ACTIONS -->
+  <div class="form-actions">
+    <button class="fa-save" id="formSave" type="button"><span>💾</span> <span id="formSaveLbl" data-en="Save" data-es="Guardar">Save</span></button>
+    <button class="xbtn" id="formExport" type="button">↓ <span data-en="Export" data-es="Exportar">Export</span></button>
   </div>
 
 </div>

@@ -73,3 +73,23 @@ export const STATUSES = [
   { id: 'finished',    en: 'Finished',    es: 'Finalizado' },
   { id: 'extended',    en: 'Extended',    es: 'Extendido' },
 ];
+
+// Puesto del usuario (perfil). Orden alfabético + "Otro" (texto libre) al final.
+// El valor almacenado en profiles.job_title es el string tal cual; si no está en
+// esta lista, la UI lo trata como "Otro" y muestra el texto guardado.
+export const JOB_TITLES = [
+  'Account Executive - Enterprise',
+  'Account Executive - Mid-Market',
+  'Channel Account Manager',
+  'Channel Director',
+  'RevOps Manager',
+  'Sales Director',
+  'Sales Manager',
+];
+export const JOB_TITLE_OTHER = '__other__';
+
+// Departamento del usuario (perfil).
+export const DEPARTMENTS = [
+  { id: 'sales',    en: 'Sales',    es: 'Sales' },
+  { id: 'partners', en: 'Partners', es: 'Partners' },
+];

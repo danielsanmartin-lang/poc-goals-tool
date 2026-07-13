@@ -7,6 +7,7 @@ import { USE_CASES, CHECKS, TIMELINE, STATUSES } from './data.js';
 import { pick, onLangChange } from './i18n.js';
 import { getPoc, getByPath, setByPath } from './state.js';
 import { savePoc } from './persistence.js';
+import { getProfile } from './auth.js';
 
 function escAttr(s) {
   return String(s ?? '')
@@ -46,7 +47,6 @@ export async function saveNow() {
 }
 
 function changed() {
-  updateSummary();
   scheduleSave();
 }
 
@@ -220,21 +220,13 @@ export function updateTitle() {
   if (t) t.textContent = co ? co + ' — PoC Kickoff' : 'PoC Kickoff Agreement';
 }
 
-export function updateSummary() {
-  const poc = getPoc();
-  const f = (v) => v || '<span class="e">—</span>';
-  const set = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
-  set('sv_co', f(poc.company));
-  set('sv_ae', f(poc.ae));
-  set('sv_dt', poc.kickoff_date ? new Date(poc.kickoff_date + 'T12:00:00').toLocaleDateString() : '<span class="e">—</span>');
-  const vecs = Object.entries(poc.vectors).filter(([, c]) => c.on).map(([k]) => k.toUpperCase()).join(', ');
-  set('sv_vec', vecs || '<span class="e">None</span>');
-  set('sv_usr', poc.users ? poc.users + ' users' : '<span class="e">—</span>');
-  const done = Object.values(poc.precheck).filter((v) => v === 'done').length;
-  const blocked = Object.values(poc.precheck).filter((v) => v === 'blocked').length;
-  set('sv_check', `${done}/${CHECKS.length} done${blocked > 0 ? ` · <span style="color:#F87171">${blocked} blocked</span>` : ''}`);
-  const stMeta = STATUSES.find((s) => s.id === poc.status) || STATUSES[0];
-  set('sv_status', `<span class="badge" data-st="${poc.status}">${pick(stMeta)}</span>`);
+// Línea "Preparado por" del banner: dueño de la PoC (implícito). Para una PoC
+// nueva es el usuario en sesión; para una existente, el nombre guardado (ae).
+function setPreparedBy() {
+  const el = document.getElementById('preparedBy');
+  if (!el) return;
+  const p = getProfile();
+  el.textContent = getPoc().ae || (p && p.full_name) || '—';
 }
 
 // ── MONTAJE / RENDER ──────────────────────────────────────
@@ -276,5 +268,5 @@ export function renderForm() {
   buildTimeline();
   applyVectors();
   updateTitle();
-  updateSummary();
+  setPreparedBy();
 }

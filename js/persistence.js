@@ -1,6 +1,7 @@
 // Persistencia contra Supabase (tabla `pocs`). RLS garantiza que cada AE solo
 // accede a sus POCs y el admin a todas — aquí no hace falta filtrar por dueño.
 import { sb } from './supabaseClient.js';
+import { getProfile } from './auth.js';
 
 // POC (modelo de la app) → fila de la tabla
 function toRow(poc) {
@@ -9,7 +10,7 @@ function toRow(poc) {
     company: poc.company || null,
     status: poc.status || 'draft',
     kickoff_date: poc.kickoff_date || null,
-    ae_name: poc.ae || null,
+    ae_name: poc.ae || (getProfile() && getProfile().full_name) || null,
     objective: poc.objective || null,
     users_in_scope: poc.users !== '' && poc.users != null ? parseInt(poc.users, 10) : null,
     scope_in: poc.scope_in || null,
@@ -51,7 +52,7 @@ export function fromRow(row) {
 export async function listPocs() {
   const { data, error } = await sb
     .from('pocs')
-    .select('id, title, company, status, kickoff_date, ae_name, ae_id, users_in_scope, updated_at')
+    .select('id, title, company, status, kickoff_date, ae_name, ae_id, users_in_scope, updated_at, owner:profiles!ae_id(full_name, job_title, department)')
     .order('updated_at', { ascending: false });
   if (error) throw error;
   return data;

@@ -21,7 +21,7 @@ export async function loadProfile() {
   }
   const { data, error } = await sb
     .from('profiles')
-    .select('id, email, full_name, role, must_change_password, is_active')
+    .select('id, email, full_name, role, must_change_password, is_active, job_title, department, profile_completed')
     .eq('id', user.id)
     .single();
   if (error || !data || data.is_active === false) {

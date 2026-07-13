@@ -1,14 +1,16 @@
-// Router hash mínimo: #/list · #/new · #/poc/<id> · #/admin
-// Gates de acceso: sin sesión → login; con contraseña provisional → cambio;
-// #/admin solo para admins.
+// Router hash: #/list · #/new · #/poc/<id> · #/admin · #/profile
+// Gates de acceso: sin sesión → login; contraseña provisional → pwchange;
+// perfil sin completar → setup; #/admin solo admins.
 import { getProfile, isAdmin } from './auth.js';
-import { emptyPoc, setPoc } from './state.js';
+import { emptyPoc, setPoc, getPoc } from './state.js';
 import { getPocById } from './persistence.js';
 import { renderForm } from './form.js';
 import { renderList } from './list.js';
 import { renderAdmin } from './admin.js';
+import { renderSetup, renderProfile } from './profile.js';
 
-const VIEWS = ['login', 'pwchange', 'list', 'poc', 'admin'];
+const VIEWS = ['login', 'pwchange', 'setup', 'list', 'poc', 'admin', 'profile'];
+const AUTH_VIEWS = ['login', 'pwchange', 'setup'];
 
 function show(view) {
   VIEWS.forEach((v) => {
@@ -16,7 +18,7 @@ function show(view) {
     if (el) el.style.display = v === view ? '' : 'none';
   });
   const tb = document.getElementById('topbar');
-  if (tb) tb.style.display = (view === 'login' || view === 'pwchange') ? 'none' : '';
+  if (tb) tb.style.display = AUTH_VIEWS.includes(view) ? 'none' : '';
   document.body.dataset.view = view;
 }
 
@@ -25,11 +27,13 @@ export async function route() {
 
   if (!profile) { show('login'); return; }
   if (profile.must_change_password) { show('pwchange'); return; }
+  if (!profile.profile_completed) { show('setup'); renderSetup(); return; }
 
   const h = location.hash || '#/list';
 
   if (h === '#/new') {
-    setPoc(emptyPoc());
+    const poc = setPoc(emptyPoc());
+    poc.ae = profile.full_name || '';
     show('poc');
     renderForm();
     return;
@@ -50,6 +54,11 @@ export async function route() {
     if (!isAdmin()) { location.hash = '#/list'; return; }
     show('admin');
     renderAdmin();
+    return;
+  }
+  if (h === '#/profile') {
+    show('profile');
+    renderProfile();
     return;
   }
   // default

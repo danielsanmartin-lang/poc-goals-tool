@@ -1,15 +1,20 @@
 // Vista de listado de POCs. RLS decide qué filas llegan: un AE ve las suyas,
-// el admin ve todas (y en ese caso mostramos la columna AE).
+// el admin ve todas (y en ese caso mostramos el Rol y el Departamento del dueño,
+// tomados de su perfil vía embed owner:profiles).
 import { listPocs, deletePoc } from './persistence.js';
 import { pick } from './i18n.js';
 import { isAdmin } from './auth.js';
-import { STATUSES } from './data.js';
+import { STATUSES, DEPARTMENTS } from './data.js';
 
 function escHtml(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 function statusLabel(id) {
   return pick(STATUSES.find((s) => s.id === id) || STATUSES[0]);
+}
+function deptLabel(id) {
+  const d = DEPARTMENTS.find((x) => x.id === id);
+  return d ? pick(d) : '—';
 }
 function fmtDate(d) {
   return d ? new Date(d + 'T12:00:00').toLocaleDateString() : '—';
@@ -18,7 +23,7 @@ function fmtDate(d) {
 export async function renderList() {
   const body = document.getElementById('list-body');
   const admin = isAdmin();
-  const cls = admin ? 'lt-row has-ae' : 'lt-row';
+  const cls = admin ? 'lt-row lt-admin' : 'lt-row';
   body.innerHTML = `<div class="list-loading">${pick('Loading…', 'Cargando…')}</div>`;
 
   let rows;
@@ -36,7 +41,7 @@ export async function renderList() {
 
   const head = `<div class="${cls} lt-head">
       <div class="lt-c">${pick('POC', 'POC')}</div>
-      ${admin ? '<div class="lt-c">AE</div>' : ''}
+      ${admin ? `<div class="lt-c">${pick('Role', 'Rol')}</div><div class="lt-c">${pick('Department', 'Departamento')}</div>` : ''}
       <div class="lt-c">${pick('Kickoff', 'Kick-off')}</div>
       <div class="lt-c">${pick('Status', 'Estado')}</div>
       <div class="lt-c">${pick('Users', 'Usuarios')}</div>
@@ -46,9 +51,17 @@ export async function renderList() {
   const items = rows.map((r) => {
     const name = escHtml(r.title || r.company || pick('(untitled)', '(sin título)'));
     const sub = r.company && r.title && r.title !== r.company ? `<span class="lt-sub">${escHtml(r.company)}</span>` : '';
+    const owner = r.owner || {};
+    const ownerName = owner.full_name || r.ae_name || '—';
+    let adminCols = '';
+    if (admin) {
+      adminCols = `
+        <div class="lt-c lt-name">${escHtml(owner.job_title || '—')}<span class="lt-sub">${escHtml(ownerName)}</span></div>
+        <div class="lt-c">${deptLabel(owner.department)}</div>`;
+    }
     return `<div class="${cls} lt-item" data-id="${r.id}">
         <div class="lt-c lt-name">${name}${sub}</div>
-        ${admin ? `<div class="lt-c">${escHtml(r.ae_name || '—')}</div>` : ''}
+        ${adminCols}
         <div class="lt-c">${fmtDate(r.kickoff_date)}</div>
         <div class="lt-c"><span class="badge" data-st="${r.status}">${statusLabel(r.status)}</span></div>
         <div class="lt-c">${r.users_in_scope != null ? r.users_in_scope : '—'}</div>

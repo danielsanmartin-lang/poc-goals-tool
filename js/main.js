@@ -1,11 +1,13 @@
-// Arranque de la app: sesión, routing y chrome (topbar, login, cambio de pw).
-import { setLang, applyStatic, getLang, pick } from './i18n.js';
+// Arranque de la app: sesión, routing y chrome (topbar, login, cambio de pw,
+// onboarding de perfil, toggles de contraseña).
+import { setLang, applyStatic, getLang, pick, onLangChange } from './i18n.js';
 import { getPoc } from './state.js';
 import { loadProfile, signIn, signOut, changePassword, getProfile, isAdmin, onAuthChange } from './auth.js';
-import { mountFormOnce, saveNow, updateSummary, setOnSaved } from './form.js';
+import { mountFormOnce, saveNow, setOnSaved } from './form.js';
 import { route, initRouter } from './router.js';
 import { renderList } from './list.js';
 import { renderAdmin } from './admin.js';
+import { initProfileForms, renderSetup, renderProfile } from './profile.js';
 
 function updateChrome() {
   const p = getProfile();
@@ -16,18 +18,56 @@ function updateChrome() {
 }
 
 function exportPDF() {
-  updateSummary();
   const co = getPoc().company || 'PoC';
   document.title = 'PoC Kickoff Agreement — ' + co + ' — Zepo';
   window.print();
+}
+
+// ── medidor de fortaleza ──────────────────────────────────
+function pwScore(pw) {
+  if (!pw) return 0;
+  let s = 0;
+  if (pw.length >= 8) s++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++;
+  if (/\d/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  return Math.min(4, s);
+}
+function updateMeter() {
+  const meter = document.getElementById('pwMeter');
+  const lbl = document.getElementById('pwMeterLbl');
+  if (!meter) return;
+  const score = pwScore(document.getElementById('pwNew').value);
+  meter.dataset.score = String(score);
+  const labels = {
+    0: '',
+    1: pick('Weak', 'Débil'),
+    2: pick('Fair', 'Media'),
+    3: pick('Good', 'Buena'),
+    4: pick('Strong', 'Fuerte'),
+  };
+  lbl.textContent = labels[score];
+}
+
+function wirePasswordEyes() {
+  document.querySelectorAll('.pw-eye').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.eye);
+      if (!input) return;
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.classList.toggle('on', show);
+      btn.textContent = show ? '🙈' : '👁';
+    });
+  });
 }
 
 function wireChrome() {
   document.querySelectorAll('.lbtn').forEach((btn) => {
     btn.addEventListener('click', () => setLang(btn.dataset.lang));
   });
-  document.getElementById('navList').addEventListener('click', () => { location.hash = '#/list'; });
-  document.getElementById('navNew').addEventListener('click', () => { location.hash = '#/new'; });
+  document.getElementById('navHome').addEventListener('click', () => { location.hash = '#/list'; });
+  document.getElementById('navProfile').addEventListener('click', () => { location.hash = '#/profile'; });
   document.getElementById('navAdmin').addEventListener('click', () => { location.hash = '#/admin'; });
   document.getElementById('listNew').addEventListener('click', () => { location.hash = '#/new'; });
   document.getElementById('logoutBtn').addEventListener('click', async () => {
@@ -37,17 +77,22 @@ function wireChrome() {
     route();
   });
 
-  document.getElementById('saveBtn').addEventListener('click', () => saveNow());
-  document.querySelectorAll('[data-action="export"]').forEach((b) => b.addEventListener('click', exportPDF));
-
-  // Indicador de guardado (manual + autosave)
+  // Botones del formulario de PoC
+  document.getElementById('formSave').addEventListener('click', () => saveNow());
+  document.getElementById('formExport').addEventListener('click', exportPDF);
   setOnSaved((ok) => {
-    const lbl = document.getElementById('saveLbl');
+    const lbl = document.getElementById('formSaveLbl');
     if (!lbl) return;
     const original = pick('Save', 'Guardar');
-    lbl.textContent = ok ? (getLang() === 'es' ? '✓ Guardado' : '✓ Saved') : (getLang() === 'es' ? '⚠ Error' : '⚠ Error');
+    lbl.textContent = ok ? (getLang() === 'es' ? '✓ Guardado' : '✓ Saved') : '⚠ Error';
     setTimeout(() => { lbl.textContent = original; }, 1600);
   });
+
+  wirePasswordEyes();
+
+  // Medidor de fortaleza en el cambio de contraseña
+  const pwNew = document.getElementById('pwNew');
+  if (pwNew) pwNew.addEventListener('input', updateMeter);
 
   // Login
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -68,7 +113,6 @@ function wireChrome() {
     }
     document.getElementById('loginPassword').value = '';
     updateChrome();
-    location.hash = '#/list';
     route();
   });
 
@@ -89,12 +133,17 @@ function wireChrome() {
     await loadProfile();
     document.getElementById('pwNew').value = '';
     document.getElementById('pwConfirm').value = '';
-    location.hash = '#/list';
+    document.getElementById('pwMeter').dataset.score = '0';
+    document.getElementById('pwMeterLbl').textContent = '';
+    updateChrome();
     route();
   });
 
-  // Re-render de vistas dinámicas al cambiar idioma (el formulario se re-renderiza solo)
-  document.addEventListener('langchange', () => {});
+  // Onboarding + perfil
+  initProfileForms({
+    afterSetup: async () => { await loadProfile(); updateChrome(); location.hash = '#/list'; route(); },
+    afterProfileSave: () => { updateChrome(); },
+  });
 }
 
 async function init() {
@@ -103,12 +152,12 @@ async function init() {
   mountFormOnce();
   initRouter();
 
-  // Re-render list/admin al cambiar idioma
-  const { onLangChange } = await import('./i18n.js');
   onLangChange(() => {
     const v = document.body.dataset.view;
     if (v === 'list') renderList();
     else if (v === 'admin') renderAdmin();
+    else if (v === 'setup') renderSetup();
+    else if (v === 'profile') renderProfile();
   });
 
   onAuthChange((event) => {

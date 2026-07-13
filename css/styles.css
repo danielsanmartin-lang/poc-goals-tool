@@ -206,6 +206,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
 .only-poc{display:none !important;}
 body[data-view="poc"] .only-poc{display:inline-flex !important;}
 
+/* Admin button — ámbar */
+.hbtn-admin{background:var(--amber);color:var(--navy);font-weight:700;}
+.hbtn-admin:hover{background:#e8890b;}
+/* el atributo [hidden] no oculta .hbtn porque la clase fija display:flex */
+.hbtn[hidden]{display:none !important;}
+
+/* password field with eye toggle */
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:40px !important;width:100%;}
+.pw-eye{position:absolute;top:50%;right:8px;transform:translateY(-50%);border:none;background:transparent;cursor:pointer;font-size:15px;line-height:1;padding:4px;opacity:.55;transition:opacity .12s;}
+.pw-eye:hover{opacity:1;}
+.pw-eye.on{opacity:1;}
+
+/* password strength meter */
+.pw-meter{display:flex;align-items:center;gap:8px;margin-top:7px;min-height:14px;}
+.pw-meter-track{flex:1;height:5px;border-radius:3px;background:var(--line);overflow:hidden;}
+.pw-meter-track span{display:block;height:100%;width:0;border-radius:3px;transition:width .18s,background .18s;}
+.pw-meter-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink4);min-width:52px;text-align:right;}
+.pw-meter[data-score="1"] .pw-meter-track span{width:25%;background:var(--red);}
+.pw-meter[data-score="2"] .pw-meter-track span{width:50%;background:var(--amber);}
+.pw-meter[data-score="3"] .pw-meter-track span{width:75%;background:#3B82F6;}
+.pw-meter[data-score="4"] .pw-meter-track span{width:100%;background:var(--green);}
+
+/* prepared-by line in banner */
+.db-prepared{margin-top:12px;font-size:11px;color:rgba(255,255,255,.5);}
+.db-prepared span:last-child{color:var(--teal);font-weight:600;}
+
+/* form action bar (Guardar / Exportar) */
+.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;}
+.fa-save{display:inline-flex;align-items:center;gap:7px;background:var(--white);color:var(--ink);border:1.5px solid var(--line);border-radius:var(--r);font-size:14px;font-weight:700;padding:11px 22px;cursor:pointer;font-family:inherit;transition:all .13s;}
+.fa-save:hover{border-color:var(--teal);color:var(--teal-dk);}
+
+/* list / admin views a bit wider than the form */
+#view-list.page, #view-admin.page{max-width:1000px;}
+/* admin list: POC · Rol · Departamento · Kickoff · Estado · Usuarios · acción */
+.lt-row.lt-admin{grid-template-columns:1.7fr 1.35fr 1.05fr .95fr .85fr .5fr 40px;}
+
 /* AUTH (login / password change) */
 .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);}
 .auth-card{background:var(--white);border-radius:16px;padding:34px 32px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
