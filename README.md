@@ -76,9 +76,12 @@ Este repo ya contiene la app. Para publicarla:
 > El esquema, las políticas RLS y las Edge Functions **ya están aplicados**. Quedan 2 ajustes de
 > configuración de Auth que solo se tocan desde el dashboard:
 
-1. **Desactivar el registro público** — Authentication → Sign In / Providers → Email →
-   *Allow new users to sign up* = **OFF**. (Con esto nadie puede crear cuenta; el blindaje
-   `is_active=false` es la red de seguridad por si se reactivara.)
+1. **Bloquear el registro público** (opcional, recomendado) — Authentication → Sign In / Providers.
+   - ⚠️ **NO** desactives el proveedor **Email** entero: eso apaga también el **login** y nadie
+     podrá entrar (error `email_provider_disabled`). El proveedor Email debe quedar **ON**.
+   - Busca el sub-ajuste **"Allow new users to sign up"** y ponlo en **OFF**. Solo eso.
+   - Es opcional: aunque quede activado, el blindaje `is_active=false` impide que un auto-registro
+     obtenga acceso a la app o a datos.
 2. **Protección de contraseñas filtradas** — Authentication → Policies → *Leaked password
    protection* = **ON** (comprueba contra HaveIBeenPwned). Recomendado subir el mínimo de longitud.
 
