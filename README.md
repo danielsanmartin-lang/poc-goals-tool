@@ -1,6 +1,6 @@
 # PoC Goals Tool
 
-Herramienta interna de **Zepo** para definir los criterios de éxito de una PoC con clientes
+Herramienta para definir los criterios de éxito de una PoC con clientes
 potenciales y llevar su seguimiento (objetivos, casos de uso, alcance, plan de simulaciones,
 pre-check de lanzamiento, timeline y estado).
 
@@ -14,4 +14,4 @@ primera vez.
 
 ---
 
-_Uso interno de Zepo._
+_Uso interno._
