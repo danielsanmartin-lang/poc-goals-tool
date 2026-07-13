@@ -125,6 +125,7 @@
     </div>
     <button class="xbtn" id="listNew"><span>＋</span> <span data-en="New POC" data-es="Nueva POC">New POC</span></button>
   </div>
+  <div class="list-scope" id="listScope" hidden></div>
   <div class="list-table" id="list-body"></div>
 </div>
 
@@ -191,7 +192,7 @@
       <div class="status-pills" id="statusPills"></div>
     </div>
 
-    <div class="db-meta" style="grid-template-columns:1fr 1fr;">
+    <div class="db-meta">
       <div class="db-cell">
         <div class="db-lbl" data-en="Organisation" data-es="Empresa">Organisation</div>
         <input data-bind="company" placeholder="Company name">
@@ -199,6 +200,10 @@
       <div class="db-cell">
         <div class="db-lbl" data-en="Kickoff date" data-es="Fecha de kick-off">Kickoff date</div>
         <input data-bind="kickoff_date" type="date">
+      </div>
+      <div class="db-cell">
+        <div class="db-lbl" data-en="End date" data-es="Fecha de fin">End date</div>
+        <input data-bind="end_date" type="date">
       </div>
     </div>
     <div class="db-prepared"><span data-en="Prepared by" data-es="Preparado por">Prepared by</span>: <span id="preparedBy">—</span></div>

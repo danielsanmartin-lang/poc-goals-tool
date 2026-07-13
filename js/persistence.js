@@ -10,6 +10,7 @@ function toRow(poc) {
     company: poc.company || null,
     status: poc.status || 'draft',
     kickoff_date: poc.kickoff_date || null,
+    end_date: poc.end_date || null,
     ae_name: poc.ae || (getProfile() && getProfile().full_name) || null,
     objective: poc.objective || null,
     users_in_scope: poc.users !== '' && poc.users != null ? parseInt(poc.users, 10) : null,
@@ -33,6 +34,7 @@ export function fromRow(row) {
     company: row.company || '',
     ae: row.ae_name || '',
     kickoff_date: row.kickoff_date || '',
+    end_date: row.end_date || '',
     status: row.status || 'draft',
     contacts: Array.isArray(row.contacts) && row.contacts.length ? row.contacts : undefined,
     objective: row.objective || '',
@@ -52,7 +54,7 @@ export function fromRow(row) {
 export async function listPocs() {
   const { data, error } = await sb
     .from('pocs')
-    .select('id, title, company, status, kickoff_date, ae_name, ae_id, users_in_scope, updated_at, owner:profiles!ae_id(full_name, job_title, department)')
+    .select('id, title, company, status, kickoff_date, end_date, ae_name, ae_id, users_in_scope, updated_at, owner:profiles!ae_id(full_name, job_title, department)')
     .order('updated_at', { ascending: false });
   if (error) throw error;
   return data;

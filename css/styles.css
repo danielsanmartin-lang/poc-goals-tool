@@ -241,8 +241,19 @@ body[data-view="poc"] .only-poc{display:inline-flex !important;}
 
 /* list / admin views a bit wider than the form */
 #view-list.page, #view-admin.page{max-width:1000px;}
-/* admin list: POC · Rol · Departamento · Kickoff · Estado · Usuarios · acción */
-.lt-row.lt-admin{grid-template-columns:1.7fr 1.35fr 1.05fr .95fr .85fr .5fr 40px;}
+/* admin list: PoC · Owner · Departamento · Kickoff · End · Estado · Usuarios · acción */
+.lt-row.lt-admin{grid-template-columns:1.5fr 1.25fr .95fr .8fr .8fr .8fr .5fr 40px;}
+
+/* toggle All / My PoCs (admin) */
+.list-scope{display:flex;gap:6px;margin-bottom:14px;}
+.scope-btn{padding:6px 14px;border-radius:16px;border:1.5px solid var(--line);background:var(--white);color:var(--ink3);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .13s;}
+.scope-btn:hover{border-color:var(--teal-bd);color:var(--ink2);}
+.scope-btn.on{background:var(--navy);border-color:var(--navy);color:#fff;}
+
+/* toast de confirmación */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);background:var(--navy);color:#fff;font-size:13px;font-weight:600;padding:12px 20px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.28);z-index:2000;display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast .tk{color:var(--teal);font-weight:800;}
 
 /* AUTH (login / password change) */
 .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);}
@@ -265,7 +276,7 @@ body[data-view="poc"] .only-poc{display:inline-flex !important;}
 .list-h1{font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-.01em;}
 .list-hsub{font-size:12px;color:var(--ink3);margin-top:2px;max-width:460px;line-height:1.5;}
 .list-table{background:var(--white);border:1px solid var(--line);border-radius:var(--rl);overflow:hidden;box-shadow:var(--shadow);}
-.lt-row{display:grid;grid-template-columns:2.4fr 1fr 1fr 0.8fr 44px;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);}
+.lt-row{display:grid;grid-template-columns:1.9fr .9fr .9fr .85fr .55fr 40px;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);}
 .lt-row.has-ae{grid-template-columns:2.2fr 1.1fr 1fr 1fr 0.7fr 44px;}
 .lt-row:last-child{border-bottom:none;}
 .lt-head{background:var(--bg);font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;}

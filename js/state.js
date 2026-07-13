@@ -8,6 +8,7 @@ export function emptyPoc() {
     company: '',
     ae: '',
     kickoff_date: '',
+    end_date: '',
     status: 'draft',
     contacts: [{ name: '', role: '', email: '', phone: '' }],
     objective: '',

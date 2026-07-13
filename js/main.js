@@ -23,6 +23,24 @@ function exportPDF() {
   window.print();
 }
 
+// Aviso flotante de confirmación (se mantiene aunque cambie de vista).
+let toastTimer = null;
+function showToast(msg) {
+  let t = document.getElementById('appToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'appToast';
+    t.className = 'toast';
+    document.body.appendChild(t);
+  }
+  t.innerHTML = `<span class="tk">✓</span> ${msg}`;
+  // reflow para reanimar si ya estaba visible
+  void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
 // ── medidor de fortaleza ──────────────────────────────────
 function pwScore(pw) {
   if (!pw) return 0;
@@ -142,6 +160,7 @@ function wireChrome() {
     document.getElementById('pwMeterLbl').textContent = '';
     updateChrome();
     route();
+    showToast(pick('Password changed successfully.', 'Contraseña cambiada correctamente.'));
   });
 
   // Onboarding + perfil

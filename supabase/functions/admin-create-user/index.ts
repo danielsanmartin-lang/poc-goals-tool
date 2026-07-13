@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     if (uErr || !user) return json(401, { error: 'Invalid session' }, origin);
 
     const { data: prof } = await caller
-      .from('profiles').select('role, is_active').eq('id', user.id).single();
+      .from('profiles').select('role, is_active, is_demo').eq('id', user.id).single();
     if (!prof || prof.role !== 'admin' || prof.is_active === false) {
       return json(403, { error: 'Admins only' }, origin);
     }
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
     // El trigger creó el profile como 'ae', inactivo y con must_change_password.
     // Lo activamos (is_active=true), fijamos full_name y, si procede, promovemos
     // a admin (service_role, sin RLS).
-    const upd: Record<string, unknown> = { full_name, is_active: true };
+    const upd: Record<string, unknown> = { full_name, is_active: true, is_demo: prof.is_demo === true };
     if (role === 'admin') upd.role = 'admin';
     const { error: pErr } = await admin.from('profiles').update(upd).eq('id', created.user.id);
     if (pErr) return json(500, { error: 'user created but profile update failed: ' + pErr.message }, origin);
