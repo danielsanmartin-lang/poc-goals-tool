@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PoC Kickoff Agreement — Zepo</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="ph-hd"><div class="ph-logo">zepo.</div><div class="ph-tag">PoC Kickoff Agreement — Confidential</div></div>
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar" id="topbar" style="display:none;">
+  <div class="tb-left">
+    <img class="tb-logo" src="https://cdn.prod.website-files.com/693ae485cbe2697b54f4858b/6957d6d0d0cbf4f8410ec8cd_zepo_brand_logo_white.svg" alt="Zepo"
+      onerror="this.style.display='none';document.getElementById('lf').style.display='block'">
+    <span id="lf" style="display:none;font-size:17px;font-weight:800;color:white;letter-spacing:-.02em;">zepo<span style="color:var(--teal)">.</span></span>
+    <div class="tb-sep"></div>
+    <span class="tb-title" id="topTitle">PoC Kickoff Agreement</span>
+  </div>
+  <div class="tb-right">
+    <div class="lpill">
+      <button class="lbtn on" data-lang="en">EN</button>
+      <button class="lbtn" data-lang="es">ES</button>
+    </div>
+    <button class="hbtn hbtn-ghost" id="navList" data-en="POCs" data-es="POCs">POCs</button>
+    <button class="hbtn hbtn-ghost" id="navNew"><span>＋</span><span data-en="New" data-es="Nueva">New</span></button>
+    <button class="hbtn hbtn-ghost only-admin" id="navAdmin" hidden data-en="Admin" data-es="Admin">Admin</button>
+    <button class="hbtn hbtn-ghost only-poc" id="saveBtn"><span>💾</span><span id="saveLbl" data-en="Save" data-es="Guardar">Save</span></button>
+    <button class="hbtn hbtn-teal only-poc" data-action="export"><span>↓</span><span data-en="Export PDF" data-es="Exportar PDF">Export PDF</span></button>
+    <span class="tb-user" id="userEmail"></span>
+    <button class="hbtn hbtn-ghost" id="logoutBtn" data-en="Log out" data-es="Salir">Log out</button>
+  </div>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="view-login" class="auth-wrap" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-logo">zepo<span style="color:var(--teal)">.</span></div>
+    <div class="auth-title" data-en="PoC Goals Tool" data-es="PoC Goals Tool">PoC Goals Tool</div>
+    <div class="auth-sub" data-en="Sign in to continue" data-es="Inicia sesión para continuar">Sign in to continue</div>
+    <form id="loginForm" autocomplete="on">
+      <div class="auth-field">
+        <label data-en="Email" data-es="Correo">Email</label>
+        <input type="email" id="loginEmail" required autocomplete="username" placeholder="name@zepo.app">
+      </div>
+      <div class="auth-field">
+        <label data-en="Password" data-es="Contraseña">Password</label>
+        <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <div class="auth-err" id="loginErr" hidden></div>
+      <button type="submit" class="auth-btn" id="loginBtn" data-en="Sign in" data-es="Entrar">Sign in</button>
+    </form>
+    <div class="auth-note" data-en="Access is by invitation only. Contact your admin to get an account." data-es="El acceso es solo por invitación. Contacta con tu admin para obtener una cuenta.">Access is by invitation only. Contact your admin to get an account.</div>
+  </div>
+</div>
+
+<!-- ══ FORCE PASSWORD CHANGE ══ -->
+<div id="view-pwchange" class="auth-wrap" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-logo">zepo<span style="color:var(--teal)">.</span></div>
+    <div class="auth-title" data-en="Set a new password" data-es="Establece una nueva contraseña">Set a new password</div>
+    <div class="auth-sub" data-en="You're using a provisional password. Choose a new one to continue." data-es="Estás usando una contraseña provisional. Elige una nueva para continuar.">You're using a provisional password. Choose a new one to continue.</div>
+    <form id="pwForm">
+      <div class="auth-field">
+        <label data-en="New password" data-es="Nueva contraseña">New password</label>
+        <input type="password" id="pwNew" required autocomplete="new-password" minlength="8" placeholder="••••••••">
+      </div>
+      <div class="auth-field">
+        <label data-en="Confirm new password" data-es="Confirma la contraseña">Confirm new password</label>
+        <input type="password" id="pwConfirm" required autocomplete="new-password" minlength="8" placeholder="••••••••">
+      </div>
+      <div class="auth-err" id="pwErr" hidden></div>
+      <button type="submit" class="auth-btn" id="pwBtn" data-en="Save & continue" data-es="Guardar y continuar">Save &amp; continue</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══ LIST ══ -->
+<div id="view-list" class="page" style="display:none;">
+  <div class="list-head">
+    <div>
+      <div class="list-h1" id="listTitle" data-en="My POCs" data-es="Mis POCs">My POCs</div>
+      <div class="list-hsub" data-en="Success criteria & tracking for each proof of concept." data-es="Criterios de éxito y seguimiento de cada prueba de concepto.">Success criteria &amp; tracking for each proof of concept.</div>
+    </div>
+    <button class="xbtn" id="listNew"><span>＋</span> <span data-en="New POC" data-es="Nueva POC">New POC</span></button>
+  </div>
+  <div class="list-table" id="list-body"></div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div id="view-admin" class="page" style="display:none;">
+  <div class="list-head">
+    <div>
+      <div class="list-h1" data-en="User management" data-es="Gestión de usuarios">User management</div>
+      <div class="list-hsub" data-en="Create accounts and manage access. New users get a provisional password and must change it on first login." data-es="Crea cuentas y gestiona el acceso. Los nuevos usuarios reciben una contraseña provisional que deben cambiar al primer inicio de sesión.">Create accounts and manage access.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="admin-form-title" data-en="Create user" data-es="Crear usuario">Create user</div>
+    <div class="admin-form">
+      <div class="field"><label data-en="Full name" data-es="Nombre completo">Full name</label><input id="nuName" placeholder="Jane Doe"></div>
+      <div class="field"><label>Email</label><input id="nuEmail" type="email" placeholder="jane@zepo.app"></div>
+      <div class="field"><label data-en="Role" data-es="Rol">Role</label>
+        <select id="nuRole"><option value="ae" data-en="AE" data-es="AE">AE</option><option value="admin" data-en="Admin" data-es="Admin">Admin</option></select>
+      </div>
+      <div class="field"><label data-en="Provisional password" data-es="Contraseña provisional">Provisional password</label>
+        <div class="pw-gen"><input id="nuPass" placeholder="auto"><button type="button" class="pt-btn" id="nuGen" data-en="Generate" data-es="Generar">Generate</button></div>
+      </div>
+    </div>
+    <div class="auth-err" id="adminErr" hidden></div>
+    <div class="admin-ok" id="adminOk" hidden></div>
+    <button class="xbtn" id="nuCreate" style="margin-top:6px;"><span data-en="Create user" data-es="Crear usuario">Create user</span></button>
+  </div>
+
+  <div class="stitle" style="margin-top:20px;" data-en="Users" data-es="Usuarios">Users</div>
+  <div class="list-table" id="admin-users"></div>
+</div>
+
+<!-- ══ POC DETAIL (formulario) ══ -->
+<div id="view-poc" class="page" style="display:none;">
+
+  <div class="doc-banner">
+    <div class="db-eye" data-en="PoC Kickoff Agreement" data-es="Acuerdo de Inicio de PoC">PoC Kickoff Agreement</div>
+    <div class="db-title" data-en="Welcome to your Zepo PoC" data-es="Bienvenido a tu PoC de Zepo">Welcome to your Zepo PoC</div>
+    <div class="db-sub" data-en="This document captures everything we agreed during today's kickoff — objectives, use cases, scope, and next steps." data-es="Este documento recoge todo lo acordado durante el kick-off: objetivos, casos de uso, alcance y próximos pasos.">This document captures everything we agreed during today's kickoff — objectives, use cases, scope, and next steps.</div>
+
+    <div class="status-row">
+      <span class="db-lbl" data-en="Status" data-es="Estado">Status</span>
+      <div class="status-pills" id="statusPills"></div>
+    </div>
+
+    <div class="db-meta">
+      <div class="db-cell">
+        <div class="db-lbl" data-en="Organisation" data-es="Empresa">Organisation</div>
+        <input data-bind="company" placeholder="Company name">
+      </div>
+      <div class="db-cell">
+        <div class="db-lbl">Zepo AE</div>
+        <input data-bind="ae" placeholder="Account Executive">
+      </div>
+      <div class="db-cell">
+        <div class="db-lbl" data-en="Kickoff date" data-es="Fecha de kick-off">Kickoff date</div>
+        <input data-bind="kickoff_date" type="date">
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. CONTACTS -->
+  <div class="section">
+    <div class="stitle" data-en="1 · Contacts" data-es="1 · Contactos">1 · Contacts</div>
+    <div class="card">
+      <div id="contactsList"></div>
+      <button class="add-btn" id="addContact" type="button"><span>＋</span><span data-en="Add contact" data-es="Añadir contacto">Add contact</span></button>
+    </div>
+  </div>
+
+  <!-- 2. OBJECTIVES + USE CASES + SCOPE -->
+  <div class="section">
+    <div class="stitle" data-en="2 · Objectives, use cases & scope" data-es="2 · Objetivos, casos de uso y alcance">2 · Objectives, use cases &amp; scope</div>
+    <div class="card">
+      <div class="field" style="margin-bottom:18px;">
+        <label data-en="In your own words, what would a successful PoC look like?" data-es="Con sus propias palabras, ¿cómo sería una PoC exitosa?">In your own words, what would a successful PoC look like? <span class="req">*</span></label>
+        <textarea data-bind="objective" placeholder="Please describe the outcomes or changes you expect to see by the end of the PoC…"></textarea>
+      </div>
+      <div style="margin-bottom:18px;">
+        <div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;" data-en="Use cases to validate" data-es="Casos de uso a validar">Use cases to validate</div>
+        <div class="uc-grid" id="ucGrid"></div>
+      </div>
+      <div class="scope-grid" style="margin-bottom:14px;">
+        <div class="sc-col in">
+          <label data-en="✓ Included in this PoC" data-es="✓ Incluido en esta PoC">✓ Included in this PoC</label>
+          <textarea data-bind="scope_in" placeholder="What is explicitly in scope…"></textarea>
+        </div>
+        <div class="sc-col out">
+          <label data-en="✗ Not included" data-es="✗ No incluido">✗ Not included</label>
+          <textarea data-bind="scope_out" placeholder="What is explicitly out of scope…"></textarea>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label data-en="Number of users in scope" data-es="Número de usuarios en el alcance">Number of users in scope <span class="req">*</span></label>
+        <input data-bind="users" type="number" placeholder="e.g. 50" min="1" style="max-width:200px;">
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. SIMULATION PLAN -->
+  <div class="section">
+    <div class="stitle" data-en="3 · Agreed simulation plan" data-es="3 · Plan de simulaciones acordado">3 · Agreed simulation plan</div>
+    <div class="card">
+      <div class="vec-grid">
+        <div class="vc" data-v="ph">
+          <div class="vc-tick">✓</div><div class="vc-pill">PHISHING</div>
+          <div class="vc-name" data-en="Email simulations" data-es="Simulaciones email">Email simulations</div>
+          <div class="vc-desc" data-en="Realistic phishing emails to target users" data-es="Emails de phishing a usuarios objetivo">Realistic phishing emails to target users</div>
+        </div>
+        <div class="vc" data-v="vi">
+          <div class="vc-tick">✓</div><div class="vc-pill">VISHING</div>
+          <div class="vc-name" data-en="AI voice calls" data-es="Llamadas de voz IA">AI voice calls</div>
+          <div class="vc-desc" data-en="AI-generated social engineering calls" data-es="Llamadas IA de ingeniería social">AI-generated social engineering calls</div>
+        </div>
+        <div class="vc" data-v="sm">
+          <div class="vc-tick">✓</div><div class="vc-pill">SMISHING</div>
+          <div class="vc-name" data-en="SMS simulations" data-es="Simulaciones SMS">SMS simulations</div>
+          <div class="vc-desc" data-en="Text message social engineering" data-es="Ingeniería social por SMS">Text message social engineering</div>
+        </div>
+      </div>
+
+      <div class="vd" id="vd_ph">
+        <div class="vd-head">📧 <span data-en="Phishing — configuration" data-es="Phishing — configuración">Phishing — configuration</span></div>
+        <div class="g3">
+          <div class="field"><label data-en="Campaigns" data-es="Campañas">Campaigns</label><input data-bind="vectors.ph.campaigns" type="number" placeholder="e.g. 3" min="1"></div>
+          <div class="field"><label data-en="Scenario themes" data-es="Temas">Scenario themes</label><input data-bind="vectors.ph.themes" placeholder="IT support, HR…"></div>
+          <div class="field"><label>Whitelisting</label>
+            <select data-bind="vectors.ph.whitelisting">
+              <option value="">— Select —</option>
+              <option value="confirmed" data-en="✅ Confirmed" data-es="✅ Confirmado">✅ Confirmed</option>
+              <option value="in_progress" data-en="⏳ In progress" data-es="⏳ En proceso">⏳ In progress</option>
+              <option value="not_started" data-en="❌ Not started" data-es="❌ No iniciado">❌ Not started</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="vd" id="vd_vi">
+        <div class="vd-head">📞 <span data-en="Vishing — configuration" data-es="Vishing — configuración">Vishing — configuration</span></div>
+        <div class="g3">
+          <div class="field"><label data-en="Attempts per user" data-es="Intentos por usuario">Attempts per user</label><input data-bind="vectors.vi.attempts" type="number" placeholder="e.g. 2" min="1"></div>
+          <div class="field"><label data-en="Business hours" data-es="Horario laboral">Business hours</label><input data-bind="vectors.vi.hours" placeholder="CET · 09:00–18:00"></div>
+          <div class="field"><label data-en="Device scope" data-es="Dispositivos">Device scope</label>
+            <select data-bind="vectors.vi.device">
+              <option value="">— Select —</option>
+              <option value="corporate" data-en="Corporate only" data-es="Solo corporativos">Corporate only</option>
+              <option value="personal" data-en="Personal (opt-in)" data-es="Personales (opt-in)">Personal (opt-in)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label data-en="Cloning consent" data-es="Consentimiento de clonación">Cloning consent</label>
+          <select data-bind="vectors.vi.consent">
+            <option value="">— Select —</option>
+            <option value="obtained" data-en="✅ Obtained" data-es="✅ Obtenido">✅ Obtained</option>
+            <option value="na" data-en="Not applicable" data-es="No aplica">Not applicable</option>
+            <option value="pending" data-en="⏳ Pending" data-es="⏳ Pendiente">⏳ Pending</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="vd" id="vd_sm">
+        <div class="vd-head">📱 <span data-en="Smishing — configuration" data-es="Smishing — configuración">Smishing — configuration</span></div>
+        <div class="g3">
+          <div class="field"><label data-en="Campaigns" data-es="Campañas">Campaigns</label><input data-bind="vectors.sm.campaigns" type="number" placeholder="e.g. 1" min="1"></div>
+          <div class="field"><label data-en="Regional availability" data-es="Disponibilidad regional">Regional availability</label>
+            <select data-bind="vectors.sm.region">
+              <option value="">— Select —</option>
+              <option value="confirmed" data-en="✅ Confirmed" data-es="✅ Confirmado">✅ Confirmed</option>
+              <option value="unverified" data-en="❌ Not yet verified" data-es="❌ Aún no verificado">❌ Not yet verified</option>
+            </select>
+          </div>
+          <div class="field"><label data-en="Device scope" data-es="Dispositivos">Device scope</label>
+            <select data-bind="vectors.sm.device">
+              <option value="">— Select —</option>
+              <option value="corporate" data-en="Corporate only" data-es="Solo corporativos">Corporate only</option>
+              <option value="personal" data-en="Personal (opt-in)" data-es="Personales (opt-in)">Personal (opt-in)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. PRE-CHECK -->
+  <div class="section">
+    <div class="stitle" data-en="4 · PoC pre-check" data-es="4 · Pre-check de la PoC">4 · PoC pre-check</div>
+    <div class="card">
+      <p style="font-size:12px;color:var(--ink3);margin-bottom:14px;" data-en="Confirm each item before the PoC launches. Mark ✓ Done or ✗ Blocked — blocked items show the associated risk." data-es="Confirma cada elemento antes de lanzar la PoC. Marca ✓ Listo o ✗ Bloqueado — los bloqueados mostrarán el riesgo asociado.">Confirm each item before the PoC launches. Mark ✓ Done or ✗ Blocked — blocked items show the associated risk.</p>
+      <div class="pcheck-list" id="pcheckList"></div>
+    </div>
+  </div>
+
+  <!-- 5. TIMELINE -->
+  <div class="section">
+    <div class="stitle" data-en="5 · Agreed timeline" data-es="5 · Timeline acordado">5 · Agreed timeline</div>
+    <div class="card"><div class="tl-list" id="tlList"></div></div>
+  </div>
+
+  <!-- 6. COMMENTS -->
+  <div class="section">
+    <div class="stitle" data-en="6 · Comments & notes" data-es="6 · Comentarios y notas">6 · Comments &amp; notes</div>
+    <div class="card">
+      <div class="field" style="margin-bottom:0;">
+        <label data-en="Internal notes about this PoC" data-es="Notas internas sobre esta PoC">Internal notes about this PoC</label>
+        <textarea data-bind="comments" style="min-height:96px;" placeholder="Context, blockers, decisions, follow-ups…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPORT -->
+  <div class="export-card">
+    <h3>✅ <span data-en="Ready to share" data-es="Listo para compartir">Ready to share</span></h3>
+    <div class="export-sub" data-en="Export as PDF to send to the customer or attach to the deal in your CRM." data-es="Exporta como PDF para enviar al cliente o adjuntar al deal en tu CRM.">Export as PDF to send to the customer or attach to the deal in your CRM.</div>
+    <div class="sum-grid">
+      <div class="sum-item"><div class="sum-lbl" data-en="Organisation" data-es="Empresa">Organisation</div><div class="sum-val" id="sv_co">—</div></div>
+      <div class="sum-item"><div class="sum-lbl">AE</div><div class="sum-val" id="sv_ae">—</div></div>
+      <div class="sum-item"><div class="sum-lbl" data-en="Date" data-es="Fecha">Date</div><div class="sum-val" id="sv_dt">—</div></div>
+      <div class="sum-item"><div class="sum-lbl" data-en="Status" data-es="Estado">Status</div><div class="sum-val" id="sv_status">—</div></div>
+      <div class="sum-item"><div class="sum-lbl" data-en="Vectors" data-es="Vectores">Vectors</div><div class="sum-val" id="sv_vec">—</div></div>
+      <div class="sum-item"><div class="sum-lbl" data-en="Users" data-es="Usuarios">Users</div><div class="sum-val" id="sv_usr">—</div></div>
+      <div class="sum-item"><div class="sum-lbl" data-en="Pre-check" data-es="Pre-check">Pre-check</div><div class="sum-val" id="sv_check">—</div></div>
+    </div>
+    <button class="xbtn" data-action="export">↓ <span data-en="Export as PDF" data-es="Exportar como PDF">Export as PDF</span></button>
+  </div>
+
+</div>
+
+<!-- Supabase SDK vendorizado (script clásico → define window.supabase antes de los módulos) -->
+<script src="js/vendor/supabase.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

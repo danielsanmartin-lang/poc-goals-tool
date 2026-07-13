@@ -1,0 +1,12 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+
+# Nada de secretos aquí: el frontend solo usa claves públicas (config.js).
+# La service_role NUNCA se versiona (vive como secret del runtime de Supabase).
+.env
+.env.*
