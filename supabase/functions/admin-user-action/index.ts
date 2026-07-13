@@ -76,6 +76,18 @@ Deno.serve(async (req) => {
       return json(200, { ok: true }, origin);
     }
 
+    if (action === 'delete_user') {
+      if (userId === user.id) return json(400, { error: 'You cannot delete yourself' }, origin);
+      // Solo se pueden borrar usuarios desactivados.
+      const { data: target } = await admin.from('profiles').select('is_active').eq('id', userId).single();
+      if (!target) return json(404, { error: 'User not found' }, origin);
+      if (target.is_active !== false) return json(400, { error: 'Deactivate the user before deleting' }, origin);
+      // Borra el usuario de Auth → la cascada elimina su profile y sus PoCs.
+      const { error: e3 } = await admin.auth.admin.deleteUser(userId);
+      if (e3) return json(400, { error: e3.message }, origin);
+      return json(200, { ok: true }, origin);
+    }
+
     return json(400, { error: 'unknown action' }, origin);
   } catch (e) {
     return json(500, { error: String((e as Error)?.message || e) }, origin);

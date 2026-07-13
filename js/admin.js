@@ -71,7 +71,8 @@ function renderUsers(users) {
           <button class="au-btn" data-reset="${u.id}" data-email="${escHtml(u.email)}">${pick('Reset pw', 'Reset pw')}</button>
         </div>
         <div class="lt-c au-actions">
-          ${self ? '' : `<button class="au-btn danger" data-toggle="${u.id}" data-active="${inactive ? '0' : '1'}">${inactive ? pick('Activate', 'Activar') : pick('Deactivate', 'Desactivar')}</button>`}
+          ${self ? '' : `<button class="au-btn" data-toggle="${u.id}" data-active="${inactive ? '0' : '1'}">${inactive ? pick('Activate', 'Activar') : pick('Deactivate', 'Desactivar')}</button>`}
+          ${(!self && inactive) ? `<button class="au-btn danger" data-delete="${u.id}" data-email="${escHtml(u.email)}">${pick('Delete', 'Borrar')}</button>` : ''}
         </div>
       </div>`;
   }).join('');
@@ -82,6 +83,9 @@ function renderUsers(users) {
   });
   wrap.querySelectorAll('[data-toggle]').forEach((btn) => {
     btn.addEventListener('click', () => toggleActive(btn.dataset.toggle, btn.dataset.active === '1'));
+  });
+  wrap.querySelectorAll('[data-delete]').forEach((btn) => {
+    btn.addEventListener('click', () => deleteUser(btn.dataset.delete, btn.dataset.email));
   });
 }
 
@@ -110,6 +114,19 @@ async function resetPassword(userId, email) {
 async function toggleActive(userId, makeInactive) {
   try {
     await invoke('admin-user-action', { action: 'set_active', user_id: userId, is_active: !makeInactive });
+    loadAndRender();
+  } catch (e) { showErr(e.message); }
+}
+
+// Borra permanentemente un usuario desactivado (y sus datos, en cascada).
+async function deleteUser(userId, email) {
+  const msg = pick(
+    'Permanently delete ' + email + ' and ALL their data (PoCs included)? This cannot be undone.',
+    'Borrar permanentemente a ' + email + ' y TODOS sus datos (incluidas sus PoCs)? No se puede deshacer.',
+  );
+  if (!confirm(msg)) return;
+  try {
+    await invoke('admin-user-action', { action: 'delete_user', user_id: userId });
     loadAndRender();
   } catch (e) { showErr(e.message); }
 }

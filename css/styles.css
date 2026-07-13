@@ -215,9 +215,10 @@ body[data-view="poc"] .only-poc{display:inline-flex !important;}
 /* password field with eye toggle */
 .pw-wrap{position:relative;}
 .pw-wrap input{padding-right:40px !important;width:100%;}
-.pw-eye{position:absolute;top:50%;right:8px;transform:translateY(-50%);border:none;background:transparent;cursor:pointer;font-size:15px;line-height:1;padding:4px;opacity:.55;transition:opacity .12s;}
+.pw-eye{position:absolute;top:50%;right:6px;transform:translateY(-50%);border:none;background:transparent;cursor:pointer;padding:4px;color:var(--ink3);opacity:.6;transition:opacity .12s,color .12s;display:inline-flex;align-items:center;justify-content:center;}
+.pw-eye svg{width:18px;height:18px;display:block;}
 .pw-eye:hover{opacity:1;}
-.pw-eye.on{opacity:1;}
+.pw-eye.on{opacity:1;color:var(--teal-dk);}
 
 /* password strength meter */
 .pw-meter{display:flex;align-items:center;gap:8px;margin-top:7px;min-height:14px;}
@@ -288,7 +289,7 @@ body[data-view="poc"] .only-poc{display:inline-flex !important;}
 .au-role.admin{background:var(--amber-bg);color:#B45309;}
 .au-role.ae{background:var(--teal-bg);color:var(--teal-dk);}
 .au-inactive{opacity:.5;}
-#admin-users .lt-row{grid-template-columns:1.5fr 1.9fr .7fr 1.1fr 92px 108px;}
+#admin-users .lt-row{grid-template-columns:1.3fr 1.7fr .7fr 1fr 84px 160px;}
 .au-actions{display:flex;gap:5px;justify-content:flex-end;}
 .au-btn{font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;border:1.5px solid var(--line);background:var(--white);cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap;}
 .au-btn:hover{border-color:var(--teal);color:var(--teal-dk);}
