@@ -313,5 +313,14 @@ body[data-view="poc"] .only-poc{display:inline-flex !important;}
 
 /* print: only the POC view matters */
 @media print{
-  .topbar,.list-head,.auth-wrap{display:none!important;}
+  .topbar,.list-head,.auth-wrap,#hsPicker,.form-actions{display:none!important;}
 }
+
+/* Durante la captura a PDF (html2pdf) se ocultan los controles interactivos. */
+.exporting #hsPicker,.exporting .form-actions{display:none!important;}
+
+/* Modal (editar usuario) */
+.modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay[hidden]{display:none;}
+.modal-card{width:100%;max-width:460px;max-height:90vh;overflow:auto;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;}

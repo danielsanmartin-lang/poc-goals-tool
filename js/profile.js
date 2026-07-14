@@ -1,9 +1,10 @@
 // Onboarding (primer acceso) y edición de perfil.
-// Rol = desplegable (JOB_TITLES) + "Otro" con texto libre. Departamento = Sales/Partners.
+// El usuario solo edita su nombre y su puesto (job_title). El departamento y el
+// vínculo con HubSpot los gestiona el admin (alta / panel de administración).
 import { sb } from './supabaseClient.js';
 import { pick } from './i18n.js';
 import { getProfile, loadProfile } from './auth.js';
-import { JOB_TITLES, JOB_TITLE_OTHER, DEPARTMENTS } from './data.js';
+import { JOB_TITLES, JOB_TITLE_OTHER } from './data.js';
 
 function fillRoleSelect(sel) {
   sel.innerHTML = '';
@@ -15,15 +16,8 @@ function fillRoleSelect(sel) {
   const other = document.createElement('option');
   other.value = JOB_TITLE_OTHER; other.textContent = pick('Other', 'Otro'); sel.appendChild(other);
 }
-function fillDeptSelect(sel) {
-  sel.innerHTML = '';
-  const ph = document.createElement('option');
-  ph.value = ''; ph.textContent = pick('— Select —', '— Elegir —'); sel.appendChild(ph);
-  DEPARTMENTS.forEach((d) => {
-    const o = document.createElement('option'); o.value = d.id; o.textContent = pick(d); sel.appendChild(o);
-  });
-}
-// Coloca el valor guardado en el desplegable: si no está en la lista → "Otro" + texto.
+
+// Coloca el valor guardado en el desplegable de puesto: si no está en la lista → "Otro" + texto.
 function setRoleControls(sel, wrap, otherInput, value) {
   if (value && JOB_TITLES.includes(value)) { sel.value = value; wrap.hidden = true; otherInput.value = ''; }
   else if (value) { sel.value = JOB_TITLE_OTHER; wrap.hidden = false; otherInput.value = value; }
@@ -36,28 +30,24 @@ function readRole(sel, otherInput) {
 export function renderSetup() {
   const p = getProfile() || {};
   fillRoleSelect(document.getElementById('setupRole'));
-  fillDeptSelect(document.getElementById('setupDept'));
   document.getElementById('setupName').value = p.full_name || '';
   setRoleControls(document.getElementById('setupRole'), document.getElementById('setupOtherWrap'), document.getElementById('setupOther'), p.job_title);
-  document.getElementById('setupDept').value = p.department || '';
   document.getElementById('setupErr').hidden = true;
 }
 
 export function renderProfile() {
   const p = getProfile() || {};
   fillRoleSelect(document.getElementById('profRole'));
-  fillDeptSelect(document.getElementById('profDept'));
   document.getElementById('profEmail').value = p.email || '';
   document.getElementById('profName').value = p.full_name || '';
   setRoleControls(document.getElementById('profRole'), document.getElementById('profOtherWrap'), document.getElementById('profOther'), p.job_title);
-  document.getElementById('profDept').value = p.department || '';
   document.getElementById('profErr').hidden = true;
   document.getElementById('profOk').hidden = true;
 }
 
-async function saveFields({ name, jobTitle, department, completed }) {
+async function saveFields({ name, jobTitle, completed }) {
   const p = getProfile();
-  const upd = { full_name: name, job_title: jobTitle, department };
+  const upd = { full_name: name, job_title: jobTitle };
   if (completed) upd.profile_completed = true;
   const { error } = await sb.from('profiles').update(upd).eq('id', p.id);
   return error;
@@ -82,13 +72,11 @@ export function initProfileForms(hooks) {
     err.hidden = true;
     const name = document.getElementById('setupName').value.trim();
     const jobTitle = readRole(document.getElementById('setupRole'), document.getElementById('setupOther'));
-    const department = document.getElementById('setupDept').value;
     if (!name) { err.textContent = pick('Name is required.', 'El nombre es obligatorio.'); err.hidden = false; return; }
     if (!jobTitle) { err.textContent = pick('Please choose or specify your role.', 'Elige o especifica tu rol.'); err.hidden = false; return; }
-    if (!department) { err.textContent = pick('Please choose a department.', 'Elige un departamento.'); err.hidden = false; return; }
     const btn = document.getElementById('setupBtn');
     btn.disabled = true;
-    const error = await saveFields({ name, jobTitle, department, completed: true });
+    const error = await saveFields({ name, jobTitle, completed: true });
     btn.disabled = false;
     if (error) { err.textContent = error.message; err.hidden = false; return; }
     await hooks.afterSetup();
@@ -100,13 +88,11 @@ export function initProfileForms(hooks) {
     err.hidden = true; ok.hidden = true;
     const name = document.getElementById('profName').value.trim();
     const jobTitle = readRole(document.getElementById('profRole'), document.getElementById('profOther'));
-    const department = document.getElementById('profDept').value;
     if (!name) { err.textContent = pick('Name is required.', 'El nombre es obligatorio.'); err.hidden = false; return; }
     if (!jobTitle) { err.textContent = pick('Please choose or specify your role.', 'Elige o especifica tu rol.'); err.hidden = false; return; }
-    if (!department) { err.textContent = pick('Please choose a department.', 'Elige un departamento.'); err.hidden = false; return; }
     const btn = document.getElementById('profSave');
     btn.disabled = true;
-    const error = await saveFields({ name, jobTitle, department, completed: false });
+    const error = await saveFields({ name, jobTitle, completed: false });
     btn.disabled = false;
     if (error) { err.textContent = error.message; err.hidden = false; return; }
     await loadProfile();

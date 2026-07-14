@@ -60,6 +60,9 @@ Deno.serve(async (req) => {
     const full_name = String(body.full_name || '').trim();
     const role = body.role === 'admin' ? 'admin' : 'ae';
     const password = String(body.password || '');
+    const hubspot_owner_id = body.hubspot_owner_id ? String(body.hubspot_owner_id) : null;
+    const hubspot_owner_name = body.hubspot_owner_name ? String(body.hubspot_owner_name) : null;
+    const department = (body.department === 'sales' || body.department === 'partners') ? body.department : null;
     if (!email || !password) return json(400, { error: 'email and password are required' }, origin);
     if (password.length < 8) return json(400, { error: 'password must be at least 8 characters' }, origin);
 
@@ -77,6 +80,8 @@ Deno.serve(async (req) => {
     // a admin (service_role, sin RLS).
     const upd: Record<string, unknown> = { full_name, is_active: true, is_demo: prof.is_demo === true };
     if (role === 'admin') upd.role = 'admin';
+    if (department) upd.department = department;
+    if (hubspot_owner_id) { upd.hubspot_owner_id = hubspot_owner_id; upd.hubspot_owner_name = hubspot_owner_name; }
     const { error: pErr } = await admin.from('profiles').update(upd).eq('id', created.user.id);
     if (pErr) return json(500, { error: 'user created but profile update failed: ' + pErr.message }, origin);
 

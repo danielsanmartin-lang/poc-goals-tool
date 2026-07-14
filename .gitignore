@@ -10,3 +10,6 @@ Thumbs.db
 # La service_role NUNCA se versiona (vive como secret del runtime de Supabase).
 .env
 .env.*
+
+# Config local de Claude Code (no versionar)
+.claude/

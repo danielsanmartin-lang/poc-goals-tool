@@ -24,6 +24,7 @@ export function emptyPoc() {
     precheck: {}, // { [checkId]: 'done' | 'blocked' }
     timeline: [], // [{ date, note }] alineado por índice con TIMELINE
     comments: '',
+    deal_id: '', // enlace al deal de HubSpot (opcional)
   };
 }
 

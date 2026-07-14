@@ -8,6 +8,7 @@ import { renderForm } from './form.js';
 import { renderList } from './list.js';
 import { renderAdmin } from './admin.js';
 import { renderSetup, renderProfile } from './profile.js';
+import { openDealPicker, hideDealPicker } from './dealpicker.js';
 
 const VIEWS = ['login', 'pwchange', 'setup', 'list', 'poc', 'admin', 'profile'];
 const AUTH_VIEWS = ['login', 'pwchange', 'setup'];
@@ -36,11 +37,13 @@ export async function route() {
     poc.ae = profile.full_name || '';
     show('poc');
     renderForm();
+    openDealPicker();
     return;
   }
   if (h.startsWith('#/poc/')) {
     const id = h.slice('#/poc/'.length);
     show('poc');
+    hideDealPicker();
     try {
       setPoc(await getPocById(id));
       renderForm();

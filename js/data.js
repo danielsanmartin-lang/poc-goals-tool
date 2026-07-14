@@ -88,7 +88,8 @@ export const JOB_TITLES = [
 ];
 export const JOB_TITLE_OTHER = '__other__';
 
-// Departamento del usuario (perfil).
+// Departamento del usuario. Fijo: Sales / Partners. Lo asigna el admin (alta o
+// panel de admin) y determina qué pipeline de HubSpot ve el usuario.
 export const DEPARTMENTS = [
   { id: 'sales',    en: 'Sales',    es: 'Sales' },
   { id: 'partners', en: 'Partners', es: 'Partners' },

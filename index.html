@@ -107,10 +107,6 @@
         <label data-en="Specify your role" data-es="Especifica tu rol">Specify your role</label>
         <input id="setupOther" placeholder="Your role">
       </div>
-      <div class="auth-field">
-        <label data-en="Department" data-es="Departamento">Department</label>
-        <select id="setupDept" required></select>
-      </div>
       <div class="auth-err" id="setupErr" hidden></div>
       <button type="submit" class="auth-btn" id="setupBtn" data-en="Save & continue" data-es="Guardar y continuar">Save &amp; continue</button>
     </form>
@@ -145,7 +141,13 @@
       <div class="field"><label data-en="Full name" data-es="Nombre completo">Full name</label><input id="nuName" placeholder="Jane Doe"></div>
       <div class="field"><label>Email</label><input id="nuEmail" type="email" placeholder="jane@zepo.app"></div>
       <div class="field"><label data-en="Role" data-es="Rol">Role</label>
-        <select id="nuRole"><option value="ae" data-en="AE" data-es="AE">AE</option><option value="admin" data-en="Admin" data-es="Admin">Admin</option></select>
+        <select id="nuRole"><option value="ae" data-en="Regular user" data-es="Usuario regular">Regular user</option><option value="admin" data-en="Admin" data-es="Admin">Admin</option></select>
+      </div>
+      <div class="field"><label data-en="Department" data-es="Departamento">Department</label>
+        <select id="nuDept"><option value="" data-en="— Select —" data-es="— Elegir —">— Select —</option><option value="sales">Sales</option><option value="partners">Partners</option></select>
+      </div>
+      <div class="field"><label data-en="HubSpot user" data-es="Usuario de HubSpot">HubSpot user</label>
+        <select id="nuHsOwner"></select>
       </div>
       <div class="field"><label data-en="Provisional password" data-es="Contraseña provisional">Provisional password</label>
         <div class="pw-gen"><input id="nuPass" placeholder="auto"><button type="button" class="pt-btn" id="nuGen" data-en="Generate" data-es="Generar">Generate</button></div>
@@ -160,12 +162,33 @@
   <div class="list-table" id="admin-users"></div>
 </div>
 
+<!-- ══ EDIT USER (modal) ══ -->
+<div id="euOverlay" class="modal-overlay" hidden>
+  <div class="modal-card card">
+    <div class="admin-form-title" data-en="Edit user" data-es="Editar usuario">Edit user</div>
+    <div id="euEmail" class="list-hsub" style="margin:4px 0 10px;"></div>
+    <div class="field"><label data-en="Full name" data-es="Nombre completo">Full name</label><input id="euName" placeholder="Jane Doe"></div>
+    <div class="field"><label data-en="Role" data-es="Rol">Role</label>
+      <select id="euRole"><option value="ae" data-en="Regular user" data-es="Usuario regular">Regular user</option><option value="admin" data-en="Admin" data-es="Admin">Admin</option></select>
+    </div>
+    <div class="field"><label data-en="Department" data-es="Departamento">Department</label>
+      <select id="euDept"><option value="" data-en="— Select —" data-es="— Elegir —">— Select —</option><option value="sales">Sales</option><option value="partners">Partners</option></select>
+    </div>
+    <div class="field"><label data-en="HubSpot user" data-es="Usuario de HubSpot">HubSpot user</label><select id="euHsOwner"></select></div>
+    <div class="auth-err" id="euErr" hidden></div>
+    <div class="modal-actions">
+      <button class="pt-btn" id="euCancel" data-en="Cancel" data-es="Cancelar">Cancel</button>
+      <button class="xbtn" id="euSave" data-en="Save changes" data-es="Guardar cambios">Save changes</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ PROFILE ══ -->
 <div id="view-profile" class="page" style="display:none;">
   <div class="list-head">
     <div>
       <div class="list-h1" data-en="My profile" data-es="Mi perfil">My profile</div>
-      <div class="list-hsub" data-en="Update your name, role and department." data-es="Actualiza tu nombre, rol y departamento.">Update your name, role and department.</div>
+      <div class="list-hsub" data-en="Update your name and role." data-es="Actualiza tu nombre y rol.">Update your name and role.</div>
     </div>
   </div>
   <div class="card" style="max-width:520px;">
@@ -173,7 +196,6 @@
     <div class="field"><label data-en="Full name" data-es="Nombre completo">Full name</label><input id="profName" placeholder="Jane Doe"></div>
     <div class="field"><label data-en="Role" data-es="Rol">Role</label><select id="profRole"></select></div>
     <div class="field" id="profOtherWrap" hidden><label data-en="Specify your role" data-es="Especifica tu rol">Specify your role</label><input id="profOther" placeholder="Your role"></div>
-    <div class="field"><label data-en="Department" data-es="Departamento">Department</label><select id="profDept"></select></div>
     <div class="auth-err" id="profErr" hidden></div>
     <div class="admin-ok" id="profOk" hidden></div>
     <button class="xbtn" id="profSave" style="margin-top:4px;" data-en="Save changes" data-es="Guardar cambios">Save changes</button>
@@ -182,6 +204,18 @@
 
 <!-- ══ POC DETAIL (formulario) ══ -->
 <div id="view-poc" class="page" style="display:none;">
+
+  <!-- Importar desde HubSpot (solo PoC nueva y usuario conectado) -->
+  <div id="hsPicker" class="section" hidden>
+    <div class="stitle" data-en="Import from HubSpot" data-es="Importar de HubSpot">Import from HubSpot</div>
+    <div class="card">
+      <div class="admin-form">
+        <div class="field"><label data-en="Stage" data-es="Etapa">Stage</label><select id="hsStage"></select></div>
+        <div class="field"><label data-en="Deal" data-es="Deal">Deal</label><select id="hsDeal"></select></div>
+      </div>
+      <div class="list-hsub" id="hsPickerMsg" style="margin-top:6px;"></div>
+    </div>
+  </div>
 
   <div class="doc-banner">
     <div class="db-eye" data-en="PoC Kickoff Agreement" data-es="Acuerdo de Inicio de PoC">PoC Kickoff Agreement</div>
@@ -362,12 +396,15 @@
   <div class="form-actions">
     <button class="fa-save" id="formSave" type="button"><span>💾</span> <span id="formSaveLbl" data-en="Save" data-es="Guardar">Save</span></button>
     <button class="xbtn" id="formExport" type="button">↓ <span data-en="Export" data-es="Exportar">Export</span></button>
+    <button class="xbtn" id="formExportHs" type="button" style="display:none;">↑ <span data-en="Export to HubSpot" data-es="Exportar a HubSpot">Export to HubSpot</span></button>
   </div>
 
 </div>
 
 <!-- Supabase SDK vendorizado (script clásico → define window.supabase antes de los módulos) -->
 <script src="js/vendor/supabase.js"></script>
+<!-- html2pdf (jsPDF + html2canvas) para generar el PDF que se sube a HubSpot -->
+<script src="js/vendor/html2pdf.bundle.min.js"></script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>
