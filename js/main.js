@@ -2,7 +2,7 @@
 // onboarding de perfil, toggles de contraseña).
 import { setLang, applyStatic, getLang, pick, onLangChange } from './i18n.js';
 import { getPoc } from './state.js';
-import { loadProfile, signIn, signOut, changePassword, getProfile, isAdmin, onAuthChange } from './auth.js';
+import { loadProfile, signIn, signOut, changePassword, getProfile, isAdmin, isDemo, onAuthChange } from './auth.js';
 import { mountFormOnce, saveNow, setOnSaved } from './form.js';
 import { route, initRouter } from './router.js';
 import { renderList } from './list.js';
@@ -15,6 +15,8 @@ function updateChrome() {
   if (emailEl) emailEl.textContent = p ? p.email : '';
   const adminBtn = document.getElementById('navAdmin');
   if (adminBtn) adminBtn.hidden = !isAdmin();
+  const demoBadge = document.getElementById('demoBadge');
+  if (demoBadge) demoBadge.hidden = !isDemo();
 }
 
 function exportPDF() {

@@ -11,6 +11,11 @@ export function isAdmin() {
   return !!_profile && _profile.role === 'admin';
 }
 
+// Usuario de demostración: la app funciona en modo solo-lectura para él.
+export function isDemo() {
+  return !!_profile && _profile.is_demo === true;
+}
+
 // Carga (o recarga) el perfil del usuario en sesión. Devuelve null si no hay
 // sesión o si el usuario está desactivado.
 export async function loadProfile() {
@@ -21,7 +26,7 @@ export async function loadProfile() {
   }
   const { data, error } = await sb
     .from('profiles')
-    .select('id, email, full_name, role, must_change_password, is_active, job_title, department, profile_completed')
+    .select('id, email, full_name, role, must_change_password, is_active, job_title, department, profile_completed, is_demo')
     .eq('id', user.id)
     .single();
   if (error || !data || data.is_active === false) {

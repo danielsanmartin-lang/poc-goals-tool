@@ -3,7 +3,7 @@
 // el navegador NUNCA maneja la service_role key.
 import { sb } from './supabaseClient.js';
 import { pick } from './i18n.js';
-import { getProfile } from './auth.js';
+import { getProfile, isDemo } from './auth.js';
 
 function escHtml(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -50,6 +50,7 @@ async function listUsers() {
 function renderUsers(users) {
   const wrap = document.getElementById('admin-users');
   const me = getProfile();
+  const demo = isDemo();
   const head = `<div class="lt-row has-ae lt-head">
       <div class="lt-c">${pick('Name', 'Nombre')}</div>
       <div class="lt-c">Email</div>
@@ -68,11 +69,11 @@ function renderUsers(users) {
         <div class="lt-c"><span class="au-role ${u.role}">${u.role}</span></div>
         <div class="lt-c">${activeLbl}${u.must_change_password ? ` · <span style="color:var(--amber)">${pick('temp pw', 'pw temp')}</span>` : ''}</div>
         <div class="lt-c au-actions">
-          <button class="au-btn" data-reset="${u.id}" data-email="${escHtml(u.email)}">${pick('Reset pw', 'Reset pw')}</button>
+          ${demo ? '' : `<button class="au-btn" data-reset="${u.id}" data-email="${escHtml(u.email)}">${pick('Reset pw', 'Reset pw')}</button>`}
         </div>
         <div class="lt-c au-actions">
-          ${self ? '' : `<button class="au-btn" data-toggle="${u.id}" data-active="${inactive ? '0' : '1'}">${inactive ? pick('Activate', 'Activar') : pick('Deactivate', 'Desactivar')}</button>`}
-          ${(!self && inactive) ? `<button class="au-btn danger" data-delete="${u.id}" data-email="${escHtml(u.email)}">${pick('Delete', 'Borrar')}</button>` : ''}
+          ${demo || self ? '' : `<button class="au-btn" data-toggle="${u.id}" data-active="${inactive ? '0' : '1'}">${inactive ? pick('Activate', 'Activar') : pick('Deactivate', 'Desactivar')}</button>`}
+          ${(!demo && !self && inactive) ? `<button class="au-btn danger" data-delete="${u.id}" data-email="${escHtml(u.email)}">${pick('Delete', 'Borrar')}</button>` : ''}
         </div>
       </div>`;
   }).join('');
@@ -163,6 +164,15 @@ async function createUser() {
   if (!email) { showErr(pick('Email is required.', 'El correo es obligatorio.')); return; }
   if (!pw) pw = genPassword();
   if (pw.length < 8) { showErr(pick('Password must be at least 8 characters.', 'La contraseña debe tener al menos 8 caracteres.')); return; }
+
+  // Modo demo: mostramos el flujo sin persistir nada.
+  if (isDemo()) {
+    showOk(`${pick('Demo mode', 'Modo demo')}: <b>${escHtml(email)}</b> ${pick('would be created with provisional password', 'se crearía con contraseña provisional')} <code>${escHtml(pw)}</code>. ${pick('Nothing was saved.', 'No se ha guardado nada.')}`);
+    document.getElementById('nuName').value = '';
+    document.getElementById('nuEmail').value = '';
+    document.getElementById('nuPass').value = '';
+    return;
+  }
 
   const btn = document.getElementById('nuCreate');
   btn.disabled = true;

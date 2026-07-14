@@ -43,10 +43,11 @@ Deno.serve(async (req) => {
     const { data: { user }, error: uErr } = await caller.auth.getUser();
     if (uErr || !user) return json(401, { error: 'Invalid session' }, origin);
     const { data: prof } = await caller
-      .from('profiles').select('role, is_active').eq('id', user.id).single();
+      .from('profiles').select('role, is_active, is_demo').eq('id', user.id).single();
     if (!prof || prof.role !== 'admin' || prof.is_active === false) {
       return json(403, { error: 'Admins only' }, origin);
     }
+    if (prof.is_demo === true) return json(403, { error: 'Demo mode is read-only' }, origin);
 
     const body = await req.json().catch(() => ({}));
     const action = String(body.action || '');

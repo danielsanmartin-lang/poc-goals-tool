@@ -7,7 +7,7 @@ import { USE_CASES, CHECKS, TIMELINE, STATUSES } from './data.js';
 import { pick, onLangChange } from './i18n.js';
 import { getPoc, getByPath, setByPath } from './state.js';
 import { savePoc } from './persistence.js';
-import { getProfile } from './auth.js';
+import { getProfile, isDemo } from './auth.js';
 
 function escAttr(s) {
   return String(s ?? '')
@@ -23,6 +23,7 @@ let onSaved = null; // (ok, err?) => void
 export function setOnSaved(fn) { onSaved = fn; }
 
 async function doSave() {
+  if (isDemo()) return; // modo demo: no se persiste nada
   if (saving) { scheduleSave(); return; }
   saving = true;
   try {
@@ -37,6 +38,7 @@ async function doSave() {
 }
 
 function scheduleSave() {
+  if (isDemo()) return; // modo demo: sin autosave
   clearTimeout(saveTimer);
   saveTimer = setTimeout(doSave, 700);
 }
@@ -269,4 +271,10 @@ export function renderForm() {
   applyVectors();
   updateTitle();
   setPreparedBy();
+
+  // Modo demo: detalle en solo-lectura (sin editar ni guardar; Export sigue activo).
+  const view = document.getElementById('view-poc');
+  if (view) view.classList.toggle('demo-readonly', isDemo());
+  const fs = document.getElementById('formSave');
+  if (fs) fs.style.display = isDemo() ? 'none' : '';
 }

@@ -4,7 +4,7 @@
 //   negrita + rol debajo) y Department, tomados del perfil del dueño.
 import { listPocs, deletePoc } from './persistence.js';
 import { pick } from './i18n.js';
-import { isAdmin, getProfile } from './auth.js';
+import { isAdmin, getProfile, isDemo } from './auth.js';
 import { STATUSES, DEPARTMENTS } from './data.js';
 
 function escHtml(s) {
@@ -40,6 +40,8 @@ export async function renderList() {
   const body = document.getElementById('list-body');
   const admin = isAdmin();
   renderScope(admin);
+  const newBtn = document.getElementById('listNew');
+  if (newBtn) newBtn.style.display = isDemo() ? 'none' : ''; // demo: sin crear PoCs
 
   const title = document.getElementById('listTitle');
   if (title) {
@@ -99,7 +101,7 @@ export async function renderList() {
         <div class="lt-c">${fmtDate(r.end_date)}</div>
         <div class="lt-c"><span class="badge" data-st="${r.status}">${statusLabel(r.status)}</span></div>
         <div class="lt-c">${r.users_in_scope != null ? r.users_in_scope : '—'}</div>
-        <div class="lt-c au-actions"><button class="lt-del" data-del="${r.id}" title="${pick('Delete', 'Eliminar')}">🗑</button></div>
+        <div class="lt-c au-actions">${isDemo() ? '' : `<button class="lt-del" data-del="${r.id}" title="${pick('Delete', 'Eliminar')}">🗑</button>`}</div>
       </div>`;
   }).join('');
 

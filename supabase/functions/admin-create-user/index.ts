@@ -53,6 +53,7 @@ Deno.serve(async (req) => {
     if (!prof || prof.role !== 'admin' || prof.is_active === false) {
       return json(403, { error: 'Admins only' }, origin);
     }
+    if (prof.is_demo === true) return json(403, { error: 'Demo mode is read-only' }, origin);
 
     const body = await req.json().catch(() => ({}));
     const email = String(body.email || '').trim().toLowerCase();

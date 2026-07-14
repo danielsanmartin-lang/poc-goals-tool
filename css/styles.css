@@ -255,6 +255,11 @@ body[data-view="poc"] .only-poc{display:inline-flex !important;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .toast .tk{color:var(--teal);font-weight:800;}
 
+/* modo demo (solo lectura) */
+.demo-badge{background:var(--amber);color:var(--navy);font-size:10px;font-weight:800;letter-spacing:.04em;padding:4px 9px;border-radius:12px;text-transform:uppercase;white-space:nowrap;}
+#view-poc.demo-readonly .doc-banner,
+#view-poc.demo-readonly .section{pointer-events:none;}
+
 /* AUTH (login / password change) */
 .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);}
 .auth-card{background:var(--white);border-radius:16px;padding:34px 32px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
