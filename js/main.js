@@ -8,6 +8,8 @@ import { route, initRouter } from './router.js';
 import { renderList } from './list.js';
 import { renderAdmin } from './admin.js';
 import { initProfileForms, renderSetup, renderProfile } from './profile.js';
+import { mountDealPicker } from './dealpicker.js';
+import { exportToDeal } from './hubspot.js';
 
 function updateChrome() {
   const p = getProfile();
@@ -23,6 +25,39 @@ function exportPDF() {
   const co = getPoc().company || 'PoC';
   document.title = 'PoC Kickoff Agreement — ' + co + ' — Zepo';
   window.print();
+}
+
+// Genera el PDF de la PoC (con html2pdf) y lo sube al deal enlazado en HubSpot.
+async function exportToHubspot() {
+  const poc = getPoc();
+  if (!poc.id) { showToast(pick('Save the PoC first.', 'Guarda la PoC primero.')); return; }
+  if (!poc.deal_id) { showToast(pick('Link a HubSpot deal first.', 'Enlaza un deal de HubSpot primero.')); return; }
+  if (typeof window.html2pdf === 'undefined') { showToast('⚠ html2pdf ' + pick('not loaded', 'no cargado')); return; }
+
+  const btn = document.getElementById('formExportHs');
+  const view = document.getElementById('view-poc');
+  if (btn) btn.disabled = true;
+  view.classList.add('exporting'); // oculta controles durante la captura
+  try {
+    const safeCo = (poc.company || 'Zepo').replace(/[^\w.\- ]+/g, '_').trim();
+    const filename = `PoC-${safeCo}.pdf`;
+    const opt = {
+      margin: 8,
+      filename,
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    };
+    const dataUri = await window.html2pdf().set(opt).from(view).outputPdf('datauristring');
+    const b64 = String(dataUri).split(',')[1] || '';
+    await exportToDeal(poc.id, filename, b64);
+    showToast(pick('Exported to HubSpot ✓', 'Exportado a HubSpot ✓'));
+  } catch (e) {
+    showToast('⚠ ' + (e.message || 'Error'));
+  } finally {
+    view.classList.remove('exporting');
+    if (btn) btn.disabled = false;
+  }
 }
 
 // Aviso flotante de confirmación (se mantiene aunque cambie de vista).
@@ -105,6 +140,7 @@ function wireChrome() {
   // Botones del formulario de PoC
   document.getElementById('formSave').addEventListener('click', () => saveNow());
   document.getElementById('formExport').addEventListener('click', exportPDF);
+  document.getElementById('formExportHs').addEventListener('click', exportToHubspot);
   setOnSaved((ok) => {
     const lbl = document.getElementById('formSaveLbl');
     if (!lbl) return;
@@ -176,6 +212,7 @@ async function init() {
   applyStatic();
   wireChrome();
   mountFormOnce();
+  mountDealPicker();
   initRouter();
 
   onLangChange(() => {

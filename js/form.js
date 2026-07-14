@@ -277,4 +277,7 @@ export function renderForm() {
   if (view) view.classList.toggle('demo-readonly', isDemo());
   const fs = document.getElementById('formSave');
   if (fs) fs.style.display = isDemo() ? 'none' : '';
+  // "Exportar a HubSpot": solo si la PoC está enlazada a un deal (y no es demo).
+  const exHs = document.getElementById('formExportHs');
+  if (exHs) exHs.style.display = (getPoc().deal_id && !isDemo()) ? '' : 'none';
 }

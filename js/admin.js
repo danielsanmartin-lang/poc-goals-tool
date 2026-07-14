@@ -4,9 +4,17 @@
 import { sb } from './supabaseClient.js';
 import { pick } from './i18n.js';
 import { getProfile, isDemo } from './auth.js';
+import { listOwners } from './hubspot.js';
 
 function escHtml(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Etiqueta visible del rol de acceso. El valor en BD sigue siendo 'ae' | 'admin';
+// solo cambia el texto que ve el admin.
+function roleLabel(role) {
+  if (role === 'admin') return 'Admin';
+  return pick('Regular user', 'Usuario regular');
 }
 
 // Contraseña provisional robusta.
@@ -38,12 +46,16 @@ async function invoke(fn, body) {
   return data;
 }
 
+let usersById = {};
+
 async function listUsers() {
   const { data, error } = await sb
     .from('profiles')
-    .select('id, email, full_name, role, is_active, must_change_password, created_at')
+    .select('id, email, full_name, role, is_active, must_change_password, created_at, department, hubspot_owner_id, hubspot_owner_name')
     .order('created_at', { ascending: true });
   if (error) throw error;
+  usersById = {};
+  (data || []).forEach((u) => { usersById[u.id] = u; });
   return data;
 }
 
@@ -66,9 +78,10 @@ function renderUsers(users) {
     return `<div class="lt-row has-ae ${inactive ? 'au-inactive' : ''}">
         <div class="lt-c lt-name">${escHtml(u.full_name || '—')}</div>
         <div class="lt-c">${escHtml(u.email)}</div>
-        <div class="lt-c"><span class="au-role ${u.role}">${u.role}</span></div>
+        <div class="lt-c"><span class="au-role ${u.role}">${escHtml(roleLabel(u.role))}</span></div>
         <div class="lt-c">${activeLbl}${u.must_change_password ? ` · <span style="color:var(--amber)">${pick('temp pw', 'pw temp')}</span>` : ''}</div>
         <div class="lt-c au-actions">
+          ${demo ? '' : `<button class="au-btn" data-edit="${u.id}">${pick('Edit', 'Editar')}</button>`}
           ${demo ? '' : `<button class="au-btn" data-reset="${u.id}" data-email="${escHtml(u.email)}">${pick('Reset pw', 'Reset pw')}</button>`}
         </div>
         <div class="lt-c au-actions">
@@ -79,6 +92,9 @@ function renderUsers(users) {
   }).join('');
   wrap.innerHTML = head + rows;
 
+  wrap.querySelectorAll('[data-edit]').forEach((btn) => {
+    btn.addEventListener('click', () => openEdit(btn.dataset.edit));
+  });
   wrap.querySelectorAll('[data-reset]').forEach((btn) => {
     btn.addEventListener('click', () => resetPassword(btn.dataset.reset, btn.dataset.email));
   });
@@ -142,6 +158,92 @@ async function loadAndRender() {
   }
 }
 
+// Owners de HubSpot (cache en memoria durante la vista admin).
+let ownersCache = null;
+async function loadOwnersCached() {
+  if (!ownersCache) ownersCache = await listOwners();
+  return ownersCache;
+}
+// Pinta "— Not linked —" + la lista de owners en un <select>, y fija el valor actual.
+function renderOwnerOptions(sel, owners, currentId) {
+  sel.innerHTML = '';
+  const none = document.createElement('option');
+  none.value = ''; none.textContent = pick('— Not linked —', '— Sin vincular —'); sel.appendChild(none);
+  owners.forEach((o) => {
+    const opt = document.createElement('option');
+    opt.value = o.id; opt.textContent = o.name; opt.dataset.name = o.name; sel.appendChild(opt);
+  });
+  sel.value = currentId || '';
+}
+function readOwner(sel) {
+  if (!sel || !sel.value) return { id: null, name: null };
+  const opt = sel.options[sel.selectedIndex];
+  return { id: sel.value, name: (opt && opt.dataset.name) || null };
+}
+// Alta: rellena #nuHsOwner; oculta el campo si HubSpot no está disponible.
+async function fillHsOwners() {
+  const sel = document.getElementById('nuHsOwner');
+  if (!sel) return;
+  const field = sel.closest('.field');
+  try {
+    renderOwnerOptions(sel, await loadOwnersCached(), '');
+    if (field) field.hidden = false;
+  } catch (_e) {
+    if (field) field.hidden = true;
+  }
+}
+
+// ── Editar usuario (modal) ────────────────────────────────────
+let editingId = null;
+async function openEdit(userId) {
+  const u = usersById[userId];
+  if (!u) return;
+  editingId = userId;
+  const me = getProfile();
+  document.getElementById('euEmail').textContent = u.email || '';
+  document.getElementById('euName').value = u.full_name || '';
+  const roleSel = document.getElementById('euRole');
+  roleSel.value = u.role === 'admin' ? 'admin' : 'ae';
+  roleSel.disabled = !!(me && me.id === userId); // no cambiar el propio rol (evita quedarse sin admin)
+  document.getElementById('euDept').value = u.department || '';
+  document.getElementById('euErr').hidden = true;
+  const hsSel = document.getElementById('euHsOwner');
+  const hsField = hsSel.closest('.field');
+  try {
+    renderOwnerOptions(hsSel, await loadOwnersCached(), u.hubspot_owner_id);
+    if (hsField) hsField.hidden = false;
+  } catch (_e) {
+    if (hsField) hsField.hidden = true; // HubSpot no disponible: se edita el resto
+  }
+  document.getElementById('euOverlay').hidden = false;
+}
+function closeEdit() {
+  editingId = null;
+  document.getElementById('euOverlay').hidden = true;
+}
+async function saveEdit() {
+  if (!editingId) return;
+  const err = document.getElementById('euErr');
+  err.hidden = true;
+  const owner = readOwner(document.getElementById('euHsOwner'));
+  const dept = document.getElementById('euDept').value || null;
+  const upd = {
+    full_name: document.getElementById('euName').value.trim(),
+    role: document.getElementById('euRole').value === 'admin' ? 'admin' : 'ae',
+    department: dept,
+    hubspot_owner_id: owner.id,
+    hubspot_owner_name: owner.name,
+  };
+  const btn = document.getElementById('euSave');
+  btn.disabled = true;
+  const { error } = await sb.from('profiles').update(upd).eq('id', editingId);
+  btn.disabled = false;
+  if (error) { err.textContent = error.message; err.hidden = false; return; }
+  closeEdit();
+  showOk(pick('User updated.', 'Usuario actualizado.'));
+  loadAndRender();
+}
+
 let wired = false;
 export async function renderAdmin() {
   if (!wired) {
@@ -150,9 +252,13 @@ export async function renderAdmin() {
       document.getElementById('nuPass').value = genPassword();
     });
     document.getElementById('nuCreate').addEventListener('click', createUser);
+    document.getElementById('euCancel').addEventListener('click', closeEdit);
+    document.getElementById('euSave').addEventListener('click', saveEdit);
+    document.getElementById('euOverlay').addEventListener('click', (e) => { if (e.target.id === 'euOverlay') closeEdit(); });
   }
   document.getElementById('adminOk').hidden = true;
   document.getElementById('adminErr').hidden = true;
+  fillHsOwners();
   await loadAndRender();
 }
 
@@ -160,6 +266,10 @@ async function createUser() {
   const name = document.getElementById('nuName').value.trim();
   const email = document.getElementById('nuEmail').value.trim();
   const role = document.getElementById('nuRole').value;
+  const department = document.getElementById('nuDept').value || null;
+  const hsSel = document.getElementById('nuHsOwner');
+  const hsId = hsSel && hsSel.value ? hsSel.value : null;
+  const hsName = hsId ? (hsSel.options[hsSel.selectedIndex].dataset.name || null) : null;
   let pw = document.getElementById('nuPass').value.trim();
   if (!email) { showErr(pick('Email is required.', 'El correo es obligatorio.')); return; }
   if (!pw) pw = genPassword();
@@ -177,7 +287,7 @@ async function createUser() {
   const btn = document.getElementById('nuCreate');
   btn.disabled = true;
   try {
-    await invoke('admin-create-user', { email, full_name: name, role, password: pw });
+    await invoke('admin-create-user', { email, full_name: name, role, department, password: pw, hubspot_owner_id: hsId, hubspot_owner_name: hsName });
     showOk(`${pick('User created', 'Usuario creado')}: <b>${escHtml(email)}</b> — ${pick('provisional password', 'contraseña provisional')}: <code>${escHtml(pw)}</code>. ${pick('Share it securely; they must change it on first login.', 'Compártela de forma segura; deberá cambiarla al primer inicio de sesión.')}`);
     document.getElementById('nuName').value = '';
     document.getElementById('nuEmail').value = '';

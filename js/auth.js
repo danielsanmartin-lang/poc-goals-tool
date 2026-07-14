@@ -26,7 +26,7 @@ export async function loadProfile() {
   }
   const { data, error } = await sb
     .from('profiles')
-    .select('id, email, full_name, role, must_change_password, is_active, job_title, department, profile_completed, is_demo')
+    .select('id, email, full_name, role, must_change_password, is_active, job_title, department, profile_completed, is_demo, hubspot_owner_id, hubspot_owner_name')
     .eq('id', user.id)
     .single();
   if (error || !data || data.is_active === false) {

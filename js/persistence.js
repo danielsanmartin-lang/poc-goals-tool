@@ -22,6 +22,7 @@ function toRow(poc) {
     vectors: poc.vectors || {},
     precheck: poc.precheck || {},
     timeline: poc.timeline || [],
+    deal_id: poc.deal_id || null,
   };
   if (Number.isNaN(row.users_in_scope)) row.users_in_scope = null;
   return row;
@@ -47,6 +48,7 @@ export function fromRow(row) {
     timeline: Array.isArray(row.timeline) ? row.timeline : [],
     comments: row.comments || '',
     title: row.title || '',
+    deal_id: row.deal_id || '',
   };
 }
 
