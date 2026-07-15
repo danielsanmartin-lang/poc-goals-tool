@@ -97,10 +97,10 @@ export async function renderList() {
     return `<div class="${cls} lt-item" data-id="${r.id}">
         <div class="lt-c lt-name">${name}${sub}</div>
         ${adminCols}
-        <div class="lt-c">${fmtDate(r.kickoff_date)}</div>
-        <div class="lt-c">${fmtDate(r.end_date)}</div>
+        <div class="lt-c t-num">${fmtDate(r.kickoff_date)}</div>
+        <div class="lt-c t-num">${fmtDate(r.end_date)}</div>
         <div class="lt-c"><span class="badge" data-st="${r.status}">${statusLabel(r.status)}</span></div>
-        <div class="lt-c">${r.users_in_scope != null ? r.users_in_scope : '—'}</div>
+        <div class="lt-c t-num">${r.users_in_scope != null ? r.users_in_scope : '—'}</div>
         <div class="lt-c au-actions">${isDemo() ? '' : `<button class="lt-del" data-del="${r.id}" title="${pick('Delete', 'Eliminar')}">🗑</button>`}</div>
       </div>`;
   }).join('');

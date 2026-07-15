@@ -10,6 +10,7 @@ import { renderAdmin } from './admin.js';
 import { initProfileForms, renderSetup, renderProfile } from './profile.js';
 import { mountDealPicker } from './dealpicker.js';
 import { exportToDeal } from './hubspot.js';
+import { initTheme } from './theme.js';
 
 function updateChrome() {
   const p = getProfile();
@@ -123,6 +124,7 @@ function wirePasswordEyes() {
 }
 
 function wireChrome() {
+  initTheme();
   document.querySelectorAll('.lbtn').forEach((btn) => {
     btn.addEventListener('click', () => setLang(btn.dataset.lang));
   });

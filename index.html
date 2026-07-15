@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PoC Kickoff Agreement — Zepo</title>
+<!-- Fija el tema (Daylight/Console) antes de pintar, para evitar parpadeo.
+     Primera visita: usa la preferencia del sistema; luego manda la elección
+     guardada por el usuario en #themeToggle (ver js/theme.js). -->
+<script>(function(){try{var t=localStorage.getItem('zepo_theme');if(t!=='daylight'&&t!=='console'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'console':'daylight';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -26,6 +30,7 @@
       <button class="lbtn on" data-lang="en">EN</button>
       <button class="lbtn" data-lang="es">ES</button>
     </div>
+    <button class="hbtn hbtn-ghost hbtn-icon" id="themeToggle" type="button" aria-label="Toggle theme"></button>
     <span class="demo-badge" id="demoBadge" hidden data-en="DEMO · read only" data-es="DEMO · solo lectura">DEMO · read only</span>
     <span class="tb-user" id="userEmail"></span>
     <button class="hbtn hbtn-ghost" id="logoutBtn" data-en="Log out" data-es="Salir">Log out</button>
