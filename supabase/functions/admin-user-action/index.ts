@@ -2,7 +2,11 @@
 // Acciones de admin sobre un usuario existente:
 //   · reset_password  → nueva contraseña provisional + forzar cambio
 //   · set_active      → activar/desactivar (y banear en Auth si se desactiva)
-// SOLO un admin autenticado. service_role únicamente en el runtime.
+//   · delete_user     → borrar un usuario desactivado (cascada)
+//   · update_profile  → editar nombre, rol, puesto, departamento y HubSpot
+// SOLO un admin autenticado. service_role únicamente en el runtime. Las
+// ediciones de perfiles ajenos van por aquí porque RLS solo deja que cada
+// usuario actualice su propia fila (profiles_update_self).
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const ALLOWED_ORIGINS = [
@@ -86,6 +90,22 @@ Deno.serve(async (req) => {
       // Borra el usuario de Auth → la cascada elimina su profile y sus PoCs.
       const { error: e3 } = await admin.auth.admin.deleteUser(userId);
       if (e3) return json(400, { error: e3.message }, origin);
+      return json(200, { ok: true }, origin);
+    }
+
+    if (action === 'update_profile') {
+      const full_name = String(body.full_name || '').trim();
+      const role = body.role === 'admin' ? 'admin' : 'ae';
+      const job_title = body.job_title ? String(body.job_title).trim().slice(0, 120) : null;
+      const department = (body.department === 'sales' || body.department === 'partners') ? body.department : null;
+      const hubspot_owner_id = body.hubspot_owner_id ? String(body.hubspot_owner_id) : null;
+      const hubspot_owner_name = body.hubspot_owner_name ? String(body.hubspot_owner_name) : null;
+      const upd: Record<string, unknown> = { job_title, department, hubspot_owner_id, hubspot_owner_name };
+      if (full_name) upd.full_name = full_name;
+      // No permitir que un admin cambie su propio rol (evita quedarse sin admins).
+      if (userId !== user.id) upd.role = role;
+      const { error: e4 } = await admin.from('profiles').update(upd).eq('id', userId);
+      if (e4) return json(400, { error: e4.message }, origin);
       return json(200, { ok: true }, origin);
     }
 

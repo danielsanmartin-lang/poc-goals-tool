@@ -204,7 +204,6 @@ function wireChrome() {
   // Onboarding + perfil
   initProfileForms({
     afterSetup: async () => { await loadProfile(); updateChrome(); location.hash = '#/list'; route(); },
-    afterProfileSave: () => { updateChrome(); },
   });
 }
 

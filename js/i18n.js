@@ -35,8 +35,8 @@ export function applyStatic(root = document) {
 
 export function setLang(l) {
   _lang = l;
-  document.querySelectorAll('.lbtn').forEach((b, i) => {
-    b.classList.toggle('on', (i === 0 && l === 'en') || (i === 1 && l === 'es'));
+  document.querySelectorAll('.lbtn').forEach((b) => {
+    b.classList.toggle('on', b.dataset.lang === l);
   });
   applyStatic();
   _listeners.forEach((fn) => fn());

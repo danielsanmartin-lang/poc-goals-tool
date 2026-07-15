@@ -99,14 +99,6 @@
         <label data-en="Full name" data-es="Nombre completo">Full name</label>
         <input id="setupName" required placeholder="Jane Doe">
       </div>
-      <div class="auth-field">
-        <label data-en="Role" data-es="Rol">Role</label>
-        <select id="setupRole" required></select>
-      </div>
-      <div class="auth-field" id="setupOtherWrap" hidden>
-        <label data-en="Specify your role" data-es="Especifica tu rol">Specify your role</label>
-        <input id="setupOther" placeholder="Your role">
-      </div>
       <div class="auth-err" id="setupErr" hidden></div>
       <button type="submit" class="auth-btn" id="setupBtn" data-en="Save & continue" data-es="Guardar y continuar">Save &amp; continue</button>
     </form>
@@ -140,9 +132,13 @@
     <div class="admin-form">
       <div class="field"><label data-en="Full name" data-es="Nombre completo">Full name</label><input id="nuName" placeholder="Jane Doe"></div>
       <div class="field"><label>Email</label><input id="nuEmail" type="email" placeholder="jane@zepo.app"></div>
-      <div class="field"><label data-en="Role" data-es="Rol">Role</label>
+      <div class="field"><label data-en="Access role" data-es="Rol de acceso">Access role</label>
         <select id="nuRole"><option value="ae" data-en="Regular user" data-es="Usuario regular">Regular user</option><option value="admin" data-en="Admin" data-es="Admin">Admin</option></select>
       </div>
+      <div class="field"><label data-en="Job title" data-es="Puesto de trabajo">Job title</label>
+        <select id="nuJob"></select>
+      </div>
+      <div class="field" id="nuJobOtherWrap" hidden><label data-en="Specify job title" data-es="Especifica el puesto">Specify job title</label><input id="nuJobOther" placeholder="Job title"></div>
       <div class="field"><label data-en="Department" data-es="Departamento">Department</label>
         <select id="nuDept"><option value="" data-en="— Select —" data-es="— Elegir —">— Select —</option><option value="sales">Sales</option><option value="partners">Partners</option></select>
       </div>
@@ -168,9 +164,13 @@
     <div class="admin-form-title" data-en="Edit user" data-es="Editar usuario">Edit user</div>
     <div id="euEmail" class="list-hsub" style="margin:4px 0 10px;"></div>
     <div class="field"><label data-en="Full name" data-es="Nombre completo">Full name</label><input id="euName" placeholder="Jane Doe"></div>
-    <div class="field"><label data-en="Role" data-es="Rol">Role</label>
+    <div class="field"><label data-en="Access role" data-es="Rol de acceso">Access role</label>
       <select id="euRole"><option value="ae" data-en="Regular user" data-es="Usuario regular">Regular user</option><option value="admin" data-en="Admin" data-es="Admin">Admin</option></select>
     </div>
+    <div class="field"><label data-en="Job title" data-es="Puesto de trabajo">Job title</label>
+      <select id="euJob"></select>
+    </div>
+    <div class="field" id="euJobOtherWrap" hidden><label data-en="Specify job title" data-es="Especifica el puesto">Specify job title</label><input id="euJobOther" placeholder="Job title"></div>
     <div class="field"><label data-en="Department" data-es="Departamento">Department</label>
       <select id="euDept"><option value="" data-en="— Select —" data-es="— Elegir —">— Select —</option><option value="sales">Sales</option><option value="partners">Partners</option></select>
     </div>
@@ -188,17 +188,34 @@
   <div class="list-head">
     <div>
       <div class="list-h1" data-en="My profile" data-es="Mi perfil">My profile</div>
-      <div class="list-hsub" data-en="Update your name and role." data-es="Actualiza tu nombre y rol.">Update your name and role.</div>
+      <div class="list-hsub" data-en="Your details are set by your admin. Here you can change your password and language." data-es="Tus datos los gestiona tu administrador. Aquí puedes cambiar tu contraseña y el idioma.">Your details are set by your admin.</div>
     </div>
   </div>
   <div class="card" style="max-width:520px;">
+    <div class="admin-form-title" data-en="Your details" data-es="Tus datos">Your details</div>
     <div class="field"><label>Email</label><input id="profEmail" disabled></div>
-    <div class="field"><label data-en="Full name" data-es="Nombre completo">Full name</label><input id="profName" placeholder="Jane Doe"></div>
-    <div class="field"><label data-en="Role" data-es="Rol">Role</label><select id="profRole"></select></div>
-    <div class="field" id="profOtherWrap" hidden><label data-en="Specify your role" data-es="Especifica tu rol">Specify your role</label><input id="profOther" placeholder="Your role"></div>
+    <div class="field"><label data-en="Full name" data-es="Nombre completo">Full name</label><input id="profName" disabled></div>
+    <div class="field"><label data-en="Job title" data-es="Puesto de trabajo">Job title</label><input id="profJob" disabled></div>
+    <div class="field"><label data-en="Department" data-es="Departamento">Department</label><input id="profDept" disabled></div>
+  </div>
+  <div class="card" style="max-width:520px;">
+    <div class="admin-form-title" data-en="Language" data-es="Idioma">Language</div>
+    <div class="lpill lpill-light" id="profLang">
+      <button type="button" class="lbtn" data-lang="en">EN</button>
+      <button type="button" class="lbtn" data-lang="es">ES</button>
+    </div>
+  </div>
+  <div class="card" style="max-width:520px;">
+    <div class="admin-form-title" data-en="Change password" data-es="Cambiar contraseña">Change password</div>
+    <div class="field"><label data-en="New password" data-es="Nueva contraseña">New password</label>
+      <div class="pw-wrap"><input type="password" id="profPwNew" autocomplete="new-password" minlength="8" placeholder="••••••••"><button type="button" class="pw-eye" data-eye="profPwNew" aria-label="Show password"></button></div>
+    </div>
+    <div class="field"><label data-en="Confirm new password" data-es="Confirma la contraseña">Confirm new password</label>
+      <div class="pw-wrap"><input type="password" id="profPwConfirm" autocomplete="new-password" minlength="8" placeholder="••••••••"><button type="button" class="pw-eye" data-eye="profPwConfirm" aria-label="Show password"></button></div>
+    </div>
     <div class="auth-err" id="profErr" hidden></div>
     <div class="admin-ok" id="profOk" hidden></div>
-    <button class="xbtn" id="profSave" style="margin-top:4px;" data-en="Save changes" data-es="Guardar cambios">Save changes</button>
+    <button class="xbtn" id="profPwSave" style="margin-top:4px;" data-en="Update password" data-es="Actualizar contraseña">Update password</button>
   </div>
 </div>
 

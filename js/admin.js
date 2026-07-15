@@ -5,6 +5,27 @@ import { sb } from './supabaseClient.js';
 import { pick } from './i18n.js';
 import { getProfile, isDemo } from './auth.js';
 import { listOwners } from './hubspot.js';
+import { JOB_TITLES, JOB_TITLE_OTHER } from './data.js';
+
+// ── Puesto de trabajo (job_title): desplegable con opción libre "Otro" ──
+function fillJobSelect(sel) {
+  sel.innerHTML = '';
+  const ph = document.createElement('option');
+  ph.value = ''; ph.textContent = pick('— Select —', '— Elegir —'); sel.appendChild(ph);
+  JOB_TITLES.forEach((t) => {
+    const o = document.createElement('option'); o.value = t; o.textContent = t; sel.appendChild(o);
+  });
+  const other = document.createElement('option');
+  other.value = JOB_TITLE_OTHER; other.textContent = pick('Other', 'Otro'); sel.appendChild(other);
+}
+function setJobControls(sel, wrap, otherInput, value) {
+  if (value && JOB_TITLES.includes(value)) { sel.value = value; wrap.hidden = true; otherInput.value = ''; }
+  else if (value) { sel.value = JOB_TITLE_OTHER; wrap.hidden = false; otherInput.value = value; }
+  else { sel.value = ''; wrap.hidden = true; otherInput.value = ''; }
+}
+function readJob(sel, otherInput) {
+  return (sel.value === JOB_TITLE_OTHER ? otherInput.value.trim() : sel.value) || null;
+}
 
 function escHtml(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -51,7 +72,7 @@ let usersById = {};
 async function listUsers() {
   const { data, error } = await sb
     .from('profiles')
-    .select('id, email, full_name, role, is_active, must_change_password, created_at, department, hubspot_owner_id, hubspot_owner_name')
+    .select('id, email, full_name, role, is_active, must_change_password, created_at, job_title, department, hubspot_owner_id, hubspot_owner_name')
     .order('created_at', { ascending: true });
   if (error) throw error;
   usersById = {};
@@ -205,6 +226,13 @@ async function openEdit(userId) {
   const roleSel = document.getElementById('euRole');
   roleSel.value = u.role === 'admin' ? 'admin' : 'ae';
   roleSel.disabled = !!(me && me.id === userId); // no cambiar el propio rol (evita quedarse sin admin)
+  fillJobSelect(document.getElementById('euJob'));
+  setJobControls(
+    document.getElementById('euJob'),
+    document.getElementById('euJobOtherWrap'),
+    document.getElementById('euJobOther'),
+    u.job_title,
+  );
   document.getElementById('euDept').value = u.department || '';
   document.getElementById('euErr').hidden = true;
   const hsSel = document.getElementById('euHsOwner');
@@ -226,22 +254,32 @@ async function saveEdit() {
   const err = document.getElementById('euErr');
   err.hidden = true;
   const owner = readOwner(document.getElementById('euHsOwner'));
+  const job = readJob(document.getElementById('euJob'), document.getElementById('euJobOther'));
   const dept = document.getElementById('euDept').value || null;
-  const upd = {
+  // El admin edita perfiles ajenos vía Edge Function (service_role): RLS solo
+  // permite a cada usuario actualizar su propia fila.
+  const payload = {
+    action: 'update_profile',
+    user_id: editingId,
     full_name: document.getElementById('euName').value.trim(),
     role: document.getElementById('euRole').value === 'admin' ? 'admin' : 'ae',
+    job_title: job,
     department: dept,
     hubspot_owner_id: owner.id,
     hubspot_owner_name: owner.name,
   };
   const btn = document.getElementById('euSave');
   btn.disabled = true;
-  const { error } = await sb.from('profiles').update(upd).eq('id', editingId);
-  btn.disabled = false;
-  if (error) { err.textContent = error.message; err.hidden = false; return; }
-  closeEdit();
-  showOk(pick('User updated.', 'Usuario actualizado.'));
-  loadAndRender();
+  try {
+    await invoke('admin-user-action', payload);
+    closeEdit();
+    showOk(pick('User updated.', 'Usuario actualizado.'));
+    loadAndRender();
+  } catch (e) {
+    err.textContent = e.message; err.hidden = false;
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 let wired = false;
@@ -255,9 +293,17 @@ export async function renderAdmin() {
     document.getElementById('euCancel').addEventListener('click', closeEdit);
     document.getElementById('euSave').addEventListener('click', saveEdit);
     document.getElementById('euOverlay').addEventListener('click', (e) => { if (e.target.id === 'euOverlay') closeEdit(); });
+    document.getElementById('nuJob').addEventListener('change', (e) => {
+      document.getElementById('nuJobOtherWrap').hidden = e.target.value !== JOB_TITLE_OTHER;
+    });
+    document.getElementById('euJob').addEventListener('change', (e) => {
+      document.getElementById('euJobOtherWrap').hidden = e.target.value !== JOB_TITLE_OTHER;
+    });
   }
   document.getElementById('adminOk').hidden = true;
   document.getElementById('adminErr').hidden = true;
+  fillJobSelect(document.getElementById('nuJob'));
+  document.getElementById('nuJobOtherWrap').hidden = true;
   fillHsOwners();
   await loadAndRender();
 }
@@ -266,6 +312,7 @@ async function createUser() {
   const name = document.getElementById('nuName').value.trim();
   const email = document.getElementById('nuEmail').value.trim();
   const role = document.getElementById('nuRole').value;
+  const job_title = readJob(document.getElementById('nuJob'), document.getElementById('nuJobOther'));
   const department = document.getElementById('nuDept').value || null;
   const hsSel = document.getElementById('nuHsOwner');
   const hsId = hsSel && hsSel.value ? hsSel.value : null;
@@ -281,17 +328,23 @@ async function createUser() {
     document.getElementById('nuName').value = '';
     document.getElementById('nuEmail').value = '';
     document.getElementById('nuPass').value = '';
+    document.getElementById('nuJob').value = '';
+    document.getElementById('nuJobOther').value = '';
+    document.getElementById('nuJobOtherWrap').hidden = true;
     return;
   }
 
   const btn = document.getElementById('nuCreate');
   btn.disabled = true;
   try {
-    await invoke('admin-create-user', { email, full_name: name, role, department, password: pw, hubspot_owner_id: hsId, hubspot_owner_name: hsName });
+    await invoke('admin-create-user', { email, full_name: name, role, job_title, department, password: pw, hubspot_owner_id: hsId, hubspot_owner_name: hsName });
     showOk(`${pick('User created', 'Usuario creado')}: <b>${escHtml(email)}</b> — ${pick('provisional password', 'contraseña provisional')}: <code>${escHtml(pw)}</code>. ${pick('Share it securely; they must change it on first login.', 'Compártela de forma segura; deberá cambiarla al primer inicio de sesión.')}`);
     document.getElementById('nuName').value = '';
     document.getElementById('nuEmail').value = '';
     document.getElementById('nuPass').value = '';
+    document.getElementById('nuJob').value = '';
+    document.getElementById('nuJobOther').value = '';
+    document.getElementById('nuJobOtherWrap').hidden = true;
     loadAndRender();
   } catch (e) {
     showErr(e.message);

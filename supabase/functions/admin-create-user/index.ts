@@ -63,6 +63,7 @@ Deno.serve(async (req) => {
     const hubspot_owner_id = body.hubspot_owner_id ? String(body.hubspot_owner_id) : null;
     const hubspot_owner_name = body.hubspot_owner_name ? String(body.hubspot_owner_name) : null;
     const department = (body.department === 'sales' || body.department === 'partners') ? body.department : null;
+    const job_title = body.job_title ? String(body.job_title).trim().slice(0, 120) : null;
     if (!email || !password) return json(400, { error: 'email and password are required' }, origin);
     if (password.length < 8) return json(400, { error: 'password must be at least 8 characters' }, origin);
 
@@ -76,9 +77,17 @@ Deno.serve(async (req) => {
     if (cErr) return json(400, { error: cErr.message }, origin);
 
     // El trigger creó el profile como 'ae', inactivo y con must_change_password.
-    // Lo activamos (is_active=true), fijamos full_name y, si procede, promovemos
-    // a admin (service_role, sin RLS).
-    const upd: Record<string, unknown> = { full_name, is_active: true, is_demo: prof.is_demo === true };
+    // Lo activamos (is_active=true), fijamos full_name/puesto y, si procede,
+    // promovemos a admin (service_role, sin RLS). El puesto (job_title) y demás
+    // atributos los define el admin aquí; el usuario no los edita. Marcamos
+    // profile_completed=true: el onboarding solo confirmaría el nombre, ya dado.
+    const upd: Record<string, unknown> = {
+      full_name,
+      is_active: true,
+      is_demo: prof.is_demo === true,
+      job_title,
+      profile_completed: true,
+    };
     if (role === 'admin') upd.role = 'admin';
     if (department) upd.department = department;
     if (hubspot_owner_id) { upd.hubspot_owner_id = hubspot_owner_id; upd.hubspot_owner_name = hubspot_owner_name; }

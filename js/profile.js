@@ -1,103 +1,81 @@
-// Onboarding (primer acceso) y edición de perfil.
-// El usuario solo edita su nombre y su puesto (job_title). El departamento y el
-// vínculo con HubSpot los gestiona el admin (alta / panel de administración).
+// Onboarding (primer acceso) y perfil del usuario.
+// El puesto (job_title), el departamento y el vínculo con HubSpot los gestiona
+// SOLO el admin (alta / panel de administración). En el onboarding el usuario
+// únicamente confirma su nombre; en su perfil sus datos son de solo lectura y
+// solo puede cambiar la contraseña y el idioma.
 import { sb } from './supabaseClient.js';
-import { pick } from './i18n.js';
-import { getProfile, loadProfile } from './auth.js';
-import { JOB_TITLES, JOB_TITLE_OTHER } from './data.js';
+import { pick, getLang } from './i18n.js';
+import { getProfile, loadProfile, changePassword } from './auth.js';
+import { DEPARTMENTS } from './data.js';
 
-function fillRoleSelect(sel) {
-  sel.innerHTML = '';
-  const ph = document.createElement('option');
-  ph.value = ''; ph.textContent = pick('— Select —', '— Elegir —'); sel.appendChild(ph);
-  JOB_TITLES.forEach((t) => {
-    const o = document.createElement('option'); o.value = t; o.textContent = t; sel.appendChild(o);
-  });
-  const other = document.createElement('option');
-  other.value = JOB_TITLE_OTHER; other.textContent = pick('Other', 'Otro'); sel.appendChild(other);
-}
-
-// Coloca el valor guardado en el desplegable de puesto: si no está en la lista → "Otro" + texto.
-function setRoleControls(sel, wrap, otherInput, value) {
-  if (value && JOB_TITLES.includes(value)) { sel.value = value; wrap.hidden = true; otherInput.value = ''; }
-  else if (value) { sel.value = JOB_TITLE_OTHER; wrap.hidden = false; otherInput.value = value; }
-  else { sel.value = ''; wrap.hidden = true; otherInput.value = ''; }
-}
-function readRole(sel, otherInput) {
-  return sel.value === JOB_TITLE_OTHER ? otherInput.value.trim() : sel.value;
+function deptLabel(id) {
+  const d = DEPARTMENTS.find((x) => x.id === id);
+  return d ? pick(d.en, d.es) : '';
 }
 
 export function renderSetup() {
   const p = getProfile() || {};
-  fillRoleSelect(document.getElementById('setupRole'));
   document.getElementById('setupName').value = p.full_name || '';
-  setRoleControls(document.getElementById('setupRole'), document.getElementById('setupOtherWrap'), document.getElementById('setupOther'), p.job_title);
   document.getElementById('setupErr').hidden = true;
 }
 
 export function renderProfile() {
   const p = getProfile() || {};
-  fillRoleSelect(document.getElementById('profRole'));
   document.getElementById('profEmail').value = p.email || '';
   document.getElementById('profName').value = p.full_name || '';
-  setRoleControls(document.getElementById('profRole'), document.getElementById('profOtherWrap'), document.getElementById('profOther'), p.job_title);
+  document.getElementById('profJob').value = p.job_title || '—';
+  document.getElementById('profDept').value = deptLabel(p.department) || '—';
+  // Estado del selector de idioma
+  document.querySelectorAll('#profLang .lbtn').forEach((b) => {
+    b.classList.toggle('on', b.dataset.lang === getLang());
+  });
+  // Limpiar el formulario de contraseña
+  document.getElementById('profPwNew').value = '';
+  document.getElementById('profPwConfirm').value = '';
   document.getElementById('profErr').hidden = true;
   document.getElementById('profOk').hidden = true;
 }
 
-async function saveFields({ name, jobTitle, completed }) {
-  const p = getProfile();
-  const upd = { full_name: name, job_title: jobTitle };
-  if (completed) upd.profile_completed = true;
-  const { error } = await sb.from('profiles').update(upd).eq('id', p.id);
-  return error;
-}
-
 let wired = false;
-// hooks: { afterSetup, afterProfileSave }
+// hooks: { afterSetup }
 export function initProfileForms(hooks) {
   if (wired) return;
   wired = true;
 
-  document.getElementById('setupRole').addEventListener('change', (e) => {
-    document.getElementById('setupOtherWrap').hidden = e.target.value !== JOB_TITLE_OTHER;
-  });
-  document.getElementById('profRole').addEventListener('change', (e) => {
-    document.getElementById('profOtherWrap').hidden = e.target.value !== JOB_TITLE_OTHER;
-  });
-
+  // Onboarding: el usuario solo confirma su nombre; el resto lo fijó el admin.
   document.getElementById('setupForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const err = document.getElementById('setupErr');
     err.hidden = true;
     const name = document.getElementById('setupName').value.trim();
-    const jobTitle = readRole(document.getElementById('setupRole'), document.getElementById('setupOther'));
     if (!name) { err.textContent = pick('Name is required.', 'El nombre es obligatorio.'); err.hidden = false; return; }
-    if (!jobTitle) { err.textContent = pick('Please choose or specify your role.', 'Elige o especifica tu rol.'); err.hidden = false; return; }
     const btn = document.getElementById('setupBtn');
     btn.disabled = true;
-    const error = await saveFields({ name, jobTitle, completed: true });
+    const p = getProfile();
+    const { error } = await sb.from('profiles').update({ full_name: name, profile_completed: true }).eq('id', p.id);
     btn.disabled = false;
     if (error) { err.textContent = error.message; err.hidden = false; return; }
     await hooks.afterSetup();
   });
 
-  document.getElementById('profSave').addEventListener('click', async () => {
+  // Perfil: cambio de contraseña (única acción de escritura del usuario).
+  document.getElementById('profPwSave').addEventListener('click', async () => {
     const err = document.getElementById('profErr');
     const ok = document.getElementById('profOk');
     err.hidden = true; ok.hidden = true;
-    const name = document.getElementById('profName').value.trim();
-    const jobTitle = readRole(document.getElementById('profRole'), document.getElementById('profOther'));
-    if (!name) { err.textContent = pick('Name is required.', 'El nombre es obligatorio.'); err.hidden = false; return; }
-    if (!jobTitle) { err.textContent = pick('Please choose or specify your role.', 'Elige o especifica tu rol.'); err.hidden = false; return; }
-    const btn = document.getElementById('profSave');
+    const p1 = document.getElementById('profPwNew').value;
+    const p2 = document.getElementById('profPwConfirm').value;
+    if (p1.length < 8) { err.textContent = pick('Password must be at least 8 characters.', 'Mínimo 8 caracteres.'); err.hidden = false; return; }
+    if (p1 !== p2) { err.textContent = pick('Passwords do not match.', 'Las contraseñas no coinciden.'); err.hidden = false; return; }
+    const btn = document.getElementById('profPwSave');
     btn.disabled = true;
-    const error = await saveFields({ name, jobTitle, completed: false });
+    const { error } = await changePassword(p1);
     btn.disabled = false;
     if (error) { err.textContent = error.message; err.hidden = false; return; }
     await loadProfile();
-    ok.textContent = pick('Profile updated.', 'Perfil actualizado.');
+    document.getElementById('profPwNew').value = '';
+    document.getElementById('profPwConfirm').value = '';
+    ok.textContent = pick('Password updated.', 'Contraseña actualizada.');
     ok.hidden = false;
-    if (hooks.afterProfileSave) hooks.afterProfileSave();
   });
 }
