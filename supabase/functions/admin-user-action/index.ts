@@ -94,16 +94,40 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'update_profile') {
-      const full_name = String(body.full_name || '').trim();
-      const role = body.role === 'admin' ? 'admin' : 'ae';
-      const job_title = body.job_title ? String(body.job_title).trim().slice(0, 120) : null;
-      const department = (body.department === 'sales' || body.department === 'partners') ? body.department : null;
-      const hubspot_owner_id = body.hubspot_owner_id ? String(body.hubspot_owner_id) : null;
-      const hubspot_owner_name = body.hubspot_owner_name ? String(body.hubspot_owner_name) : null;
-      const upd: Record<string, unknown> = { job_title, department, hubspot_owner_id, hubspot_owner_name };
-      if (full_name) upd.full_name = full_name;
-      // No permitir que un admin cambie su propio rol (evita quedarse sin admins).
-      if (userId !== user.id) upd.role = role;
+      // Actualización PARCIAL: solo se tocan los campos presentes en el body.
+      // Así el panel de admin (que envía todo) y el auto-perfil del admin (que
+      // envía solo email/nombre/puesto/departamento) conviven sin pisar el
+      // vínculo de HubSpot ni el rol de quien no lo manda.
+      const upd: Record<string, unknown> = {};
+      if ('full_name' in body) {
+        const fn = String(body.full_name || '').trim();
+        if (fn) upd.full_name = fn;
+      }
+      if ('job_title' in body) {
+        upd.job_title = body.job_title ? String(body.job_title).trim().slice(0, 120) : null;
+      }
+      if ('department' in body) {
+        upd.department = (body.department === 'sales' || body.department === 'partners') ? body.department : null;
+      }
+      if ('hubspot_owner_id' in body) {
+        upd.hubspot_owner_id = body.hubspot_owner_id ? String(body.hubspot_owner_id) : null;
+        upd.hubspot_owner_name = body.hubspot_owner_name ? String(body.hubspot_owner_name) : null;
+      }
+      // El rol nunca se cambia sobre uno mismo (evita quedarse sin admins).
+      if ('role' in body && userId !== user.id) {
+        upd.role = body.role === 'admin' ? 'admin' : 'ae';
+      }
+      // Cambio de email: actualiza Auth (login) ya confirmado + la columna email.
+      if ('email' in body) {
+        const email = String(body.email || '').trim().toLowerCase();
+        if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+          return json(400, { error: 'invalid email' }, origin);
+        }
+        const { error: eMail } = await admin.auth.admin.updateUserById(userId, { email, email_confirm: true });
+        if (eMail) return json(400, { error: eMail.message }, origin);
+        upd.email = email;
+      }
+      if (Object.keys(upd).length === 0) return json(200, { ok: true }, origin);
       const { error: e4 } = await admin.from('profiles').update(upd).eq('id', userId);
       if (e4) return json(400, { error: e4.message }, origin);
       return json(200, { ok: true }, origin);

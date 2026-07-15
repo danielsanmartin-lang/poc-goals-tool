@@ -328,11 +328,11 @@ body[data-view="poc"] .only-poc{display:inline-flex !important;}
 .pw-gen input{flex:1;}
 .admin-ok{background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green-dk);font-size:12px;padding:10px 12px;border-radius:var(--r);margin-bottom:12px;line-height:1.5;}
 .admin-ok code{background:rgba(0,0,0,.06);padding:1px 6px;border-radius:4px;font-size:12px;font-weight:700;}
-.au-role{font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em;}
+.au-role{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;}
 .au-role.admin{background:var(--amber-bg);color:var(--amber-dk);}
 .au-role.ae{background:var(--teal-bg);color:var(--teal-dk);}
 .au-inactive{opacity:.5;}
-#admin-users .lt-row{grid-template-columns:1.2fr 1.5fr .7fr .9fr 150px 160px;}
+#admin-users .lt-row{grid-template-columns:1.2fr 1.3fr 120px .9fr 150px 160px;}
 .au-actions{display:flex;gap:5px;justify-content:flex-end;overflow:visible;flex-wrap:wrap;}
 .au-btn{font-size:10px;font-weight:700;padding:3px 9px;border-radius:5px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink2);cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap;}
 .au-btn:hover{border-color:var(--teal);color:var(--teal-dk);}
