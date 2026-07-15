@@ -2,7 +2,7 @@
 // onboarding de perfil, toggles de contraseña).
 import { setLang, applyStatic, getLang, pick, onLangChange } from './i18n.js';
 import { getPoc } from './state.js';
-import { loadProfile, signIn, signOut, changePassword, getProfile, isAdmin, isDemo, onAuthChange } from './auth.js';
+import { loadProfile, signIn, signOut, changePassword, getProfile, isAdmin, isDemo, onAuthChange, saveLanguage } from './auth.js';
 import { mountFormOnce, saveNow, setOnSaved } from './form.js';
 import { route, initRouter } from './router.js';
 import { renderList } from './list.js';
@@ -20,6 +20,12 @@ function updateChrome() {
   if (adminBtn) adminBtn.hidden = !isAdmin();
   const demoBadge = document.getElementById('demoBadge');
   if (demoBadge) demoBadge.hidden = !isDemo();
+}
+
+// Aplica el idioma guardado en el perfil (persistente entre dispositivos).
+function applyProfileLanguage() {
+  const p = getProfile();
+  if (p && p.language && p.language !== getLang()) setLang(p.language);
 }
 
 function exportPDF() {
@@ -126,7 +132,7 @@ function wirePasswordEyes() {
 function wireChrome() {
   initTheme();
   document.querySelectorAll('.lbtn').forEach((btn) => {
-    btn.addEventListener('click', () => setLang(btn.dataset.lang));
+    btn.addEventListener('click', () => { setLang(btn.dataset.lang); saveLanguage(btn.dataset.lang); });
   });
   document.getElementById('navHome').addEventListener('click', () => { location.hash = '#/list'; });
   document.getElementById('navProfile').addEventListener('click', () => { location.hash = '#/profile'; });
@@ -175,6 +181,7 @@ function wireChrome() {
       return;
     }
     document.getElementById('loginPassword').value = '';
+    applyProfileLanguage();
     updateChrome();
     route();
   });
@@ -233,6 +240,7 @@ async function init() {
   });
 
   await loadProfile();
+  applyProfileLanguage();
   updateChrome();
   route();
 }

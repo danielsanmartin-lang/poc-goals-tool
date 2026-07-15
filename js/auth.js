@@ -26,7 +26,7 @@ export async function loadProfile() {
   }
   const { data, error } = await sb
     .from('profiles')
-    .select('id, email, full_name, role, must_change_password, is_active, job_title, department, profile_completed, is_demo, hubspot_owner_id, hubspot_owner_name')
+    .select('id, email, full_name, role, must_change_password, is_active, job_title, department, profile_completed, is_demo, hubspot_owner_id, hubspot_owner_name, language')
     .eq('id', user.id)
     .single();
   if (error || !data || data.is_active === false) {
@@ -59,6 +59,17 @@ export async function changePassword(newPassword) {
     if (_profile) _profile.must_change_password = false;
   }
   return {};
+}
+
+// Guarda el idioma preferido en el perfil (persistente y entre dispositivos).
+// Sin sesión no hace nada en BD; la continuidad en el mismo dispositivo la da
+// localStorage (i18n.setLang). RLS profiles_update_self permite el auto-cambio.
+export async function saveLanguage(lang) {
+  const l = lang === 'es' ? 'es' : 'en';
+  if (!_profile) return {};
+  _profile.language = l;
+  const { error } = await sb.from('profiles').update({ language: l }).eq('id', _profile.id);
+  return { error };
 }
 
 // Reacciona a cambios de sesión (login/logout en otra pestaña, expiración…).
