@@ -329,8 +329,22 @@ body[data-view="poc"] .only-poc{display:inline-flex !important;}
 .lg-vn{font-size:12.5px;font-weight:700;}
 .lg-vd{font-size:10.5px;color:rgba(226,240,248,.5);line-height:1.45;margin-top:2px;}
 .lg-foot{position:relative;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(226,240,248,.35);}
-.auth-panel{display:flex;align-items:center;justify-content:center;padding:48px 40px;background:var(--surface);}
-.auth-panel .auth-card{box-shadow:none;padding:0;max-width:352px;background:transparent;border-radius:0;}
+/* Lado derecho: fondo oscuro a juego con el panel de marca + tarjeta glass.
+   El login queda como una pantalla oscura coherente (en ambos temas), así
+   que el texto y los campos de ESTA tarjeta van en claro, no con los tokens
+   del tema. Solo afecta al login (.auth-panel no existe en pwchange/setup). */
+.auth-panel{display:flex;align-items:center;justify-content:center;padding:48px 40px;background:linear-gradient(210deg,#0A1E38 0%,#071528 55%,#050E1B 100%);}
+.auth-panel .auth-card{max-width:372px;padding:38px 34px;background:rgba(255,255,255,.045);border:1px solid rgba(120,200,220,.12);border-radius:20px;box-shadow:0 30px 70px -30px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05);}
+.auth-panel .auth-logo{color:#F2F7FB;}
+.auth-panel .auth-title{color:#FFFFFF;}
+.auth-panel .auth-sub{color:rgba(226,240,248,.55);}
+.auth-panel .auth-field label{color:rgba(180,198,216,.75);}
+.auth-panel .auth-field input{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);color:#EAF1F8;}
+.auth-panel .auth-field input::placeholder{color:rgba(226,240,248,.3);}
+.auth-panel .auth-field input:focus{border-color:var(--teal);background:rgba(255,255,255,.07);box-shadow:0 0 0 4px rgba(47,217,207,.15);}
+.auth-panel .auth-note{color:rgba(226,240,248,.4);}
+.auth-panel .pw-eye{color:rgba(226,240,248,.5);}
+.auth-panel .pw-eye.on{color:var(--heroteal);}
 /* En pantallas estrechas el login vuelve a una sola columna (solo formulario). */
 @media (max-width:860px){
   .auth-split{grid-template-columns:1fr;}
