@@ -38,11 +38,14 @@ function isOverdue(r) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   return new Date(r.end_date + 'T12:00:00') < today;
 }
-// Días que quedan antes de la purga automática (30 días desde el archivado).
+// Días tras el archivado antes de la purga automática. Debe coincidir con el
+// intervalo del job pg_cron 'purge-archived-pocs' (ver migración 0015).
+const PURGE_DAYS = 5;
+// Días que quedan antes de la purga automática.
 function daysUntilPurge(r) {
   if (!r.archived_at) return null;
   const elapsed = (Date.now() - new Date(r.archived_at).getTime()) / 86400000;
-  return Math.max(0, Math.ceil(30 - elapsed));
+  return Math.max(0, Math.ceil(PURGE_DAYS - elapsed));
 }
 
 let scope = 'all'; // solo admin: 'all' | 'my'
@@ -347,8 +350,8 @@ function paint() {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
       if (!confirm(pick(
-        'Archive this PoC? It will be permanently deleted after 30 days (you can restore it before then).',
-        '¿Archivar esta PoC? Se borrará permanentemente a los 30 días (puedes restaurarla antes).',
+        `Archive this PoC? It will be permanently deleted after ${PURGE_DAYS} days (you can restore it before then).`,
+        `¿Archivar esta PoC? Se borrará permanentemente a los ${PURGE_DAYS} días (puedes restaurarla antes).`,
       ))) return;
       try {
         await archivePoc(btn.dataset.archive);
