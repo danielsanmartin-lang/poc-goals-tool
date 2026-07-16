@@ -13,3 +13,6 @@ Thumbs.db
 
 # Config local de Claude Code (no versionar)
 .claude/
+
+# Historial de versiones local (uso interno, no se sube a GitHub)
+VERSIONES.md
