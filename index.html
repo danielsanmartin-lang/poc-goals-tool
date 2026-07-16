@@ -33,28 +33,44 @@
   </div>
 </div>
 
-<!-- ══ LOGIN ══ -->
-<div id="view-login" class="auth-wrap" style="display:none;">
-  <div class="auth-card">
-    <div class="auth-logo">zepo<span style="color:var(--teal)">.</span></div>
-    <div class="auth-title" data-en="PoC Goals Tool" data-es="PoC Goals Tool">PoC Goals Tool</div>
-    <div class="auth-sub" data-en="Sign in to continue" data-es="Inicia sesión para continuar">Sign in to continue</div>
-    <form id="loginForm" autocomplete="on">
-      <div class="auth-field">
-        <label data-en="Email" data-es="Correo">Email</label>
-        <input type="email" id="loginEmail" required autocomplete="username" placeholder="name@zepo.app">
+<!-- ══ LOGIN (pantalla dividida: marca + formulario) ══ -->
+<div id="view-login" class="auth-wrap auth-split" style="display:none;">
+  <div class="lg-brand" aria-hidden="true">
+    <div class="lg-logo">zepo<b>.</b></div>
+    <div class="lg-mid">
+      <div class="lg-eyebrow">PoC Goals Tool</div>
+      <h1 class="lg-h" data-en="Every PoC, with its goals in writing." data-es="Cada PoC, con sus objetivos por escrito.">Every PoC, with its goals in writing.</h1>
+      <p class="lg-p" data-en="Success criteria, scope and timeline agreed at kickoff — ready to export and share with your customer." data-es="Criterios de éxito, alcance y calendario acordados en el kickoff — listos para exportar y compartir con el cliente.">Success criteria, scope and timeline agreed at kickoff — ready to export and share with your customer.</p>
+      <div class="lg-vecs">
+        <div class="lg-vec"><span class="lg-vp">PHISHING</span><div class="lg-vn">Email</div><div class="lg-vd" data-en="Realistic campaigns to target users" data-es="Campañas realistas a usuarios objetivo">Realistic campaigns to target users</div></div>
+        <div class="lg-vec"><span class="lg-vp">VISHING</span><div class="lg-vn" data-en="AI voice" data-es="Voz con IA">AI voice</div><div class="lg-vd" data-en="AI social-engineering calls" data-es="Llamadas de ingeniería social con IA">AI social-engineering calls</div></div>
+        <div class="lg-vec"><span class="lg-vp">SMISHING</span><div class="lg-vn">SMS</div><div class="lg-vd" data-en="Social engineering by text" data-es="Ingeniería social por mensaje">Social engineering by text</div></div>
       </div>
-      <div class="auth-field">
-        <label data-en="Password" data-es="Contraseña">Password</label>
-        <div class="pw-wrap">
-          <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••">
-          <button type="button" class="pw-eye" data-eye="loginPassword" aria-label="Show password"></button>
+    </div>
+    <div class="lg-foot">PoC Kickoff Agreement — Confidential</div>
+  </div>
+  <div class="auth-panel">
+    <div class="auth-card">
+      <div class="auth-logo">zepo<span style="color:var(--teal)">.</span></div>
+      <div class="auth-title" data-en="Welcome back" data-es="Bienvenido de nuevo">Welcome back</div>
+      <div class="auth-sub" data-en="Sign in to continue" data-es="Inicia sesión para continuar">Sign in to continue</div>
+      <form id="loginForm" autocomplete="on">
+        <div class="auth-field">
+          <label data-en="Email" data-es="Correo">Email</label>
+          <input type="email" id="loginEmail" required autocomplete="username" placeholder="name@zepo.app">
         </div>
-      </div>
-      <div class="auth-err" id="loginErr" hidden></div>
-      <button type="submit" class="auth-btn" id="loginBtn" data-en="Sign in" data-es="Entrar">Sign in</button>
-    </form>
-    <div class="auth-note" data-en="Access is by invitation only. Contact your admin to get an account." data-es="El acceso es solo por invitación. Contacta con tu admin para obtener una cuenta.">Access is by invitation only. Contact your admin to get an account.</div>
+        <div class="auth-field">
+          <label data-en="Password" data-es="Contraseña">Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••">
+            <button type="button" class="pw-eye" data-eye="loginPassword" aria-label="Show password"></button>
+          </div>
+        </div>
+        <div class="auth-err" id="loginErr" hidden></div>
+        <button type="submit" class="auth-btn" id="loginBtn" data-en="Sign in" data-es="Entrar">Sign in</button>
+      </form>
+      <div class="auth-note" data-en="Access is by invitation only. Contact your admin to get an account." data-es="El acceso es solo por invitación. Contacta con tu admin para obtener una cuenta.">Access is by invitation only. Contact your admin to get an account.</div>
+    </div>
   </div>
 </div>
 
