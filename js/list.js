@@ -6,7 +6,7 @@
 // Sobre las filas ya traídas se aplican (en cliente): filtros, orden por
 // columnas y CSV. El borrado se sustituye por archivado (soft-delete).
 import { listPocs, archivePoc, restorePoc } from './persistence.js';
-import { pick, getLang } from './i18n.js';
+import { pick } from './i18n.js';
 import { isAdmin, getProfile, isDemo } from './auth.js';
 import { STATUSES, DEPARTMENTS, OUTCOMES } from './data.js';
 
@@ -24,24 +24,8 @@ function deptLabel(id) {
   const d = DEPARTMENTS.find((x) => x.id === id);
   return d ? pick(d) : '—';
 }
-// Fecha legible («12 jun 2026») según el idioma activo.
 function fmtDate(d) {
-  if (!d) return '—';
-  return new Date(d + 'T12:00:00').toLocaleDateString(
-    getLang() === 'es' ? 'es-ES' : 'en-GB',
-    { day: '2-digit', month: 'short', year: 'numeric' },
-  );
-}
-
-// Monograma de empresa: iniciales + color estable derivado del nombre.
-const MONO_CLASSES = ['m-t', 'm-b', 'm-v', 'm-a'];
-function monogram(name) {
-  const t = String(name || '?').trim() || '?';
-  const parts = t.split(/\s+/).filter(Boolean);
-  const ini = (((parts[0] || '')[0] || '') + ((parts[1] || '')[0] || (parts[0] || '')[1] || '')).toUpperCase();
-  let h = 0;
-  for (const ch of t) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return `<span class="mono ${MONO_CLASSES[h % MONO_CLASSES.length]}">${escHtml(ini)}</span>`;
+  return d ? new Date(d + 'T12:00:00').toLocaleDateString() : '—';
 }
 function ownerName(r) {
   return (r.owner && r.owner.full_name) || r.ae_name || '';
@@ -129,24 +113,10 @@ function renderToolbar(admin) {
 // ── Métricas (todos los usuarios; el admin respeta el scope All/My) ─────────
 // `kpi` opcional: si se pasa, el tile es clicable y filtra la lista; si es
 // null (Win rate, Duración media) el tile es informativo, no clicable.
-// Iconos line-art de los KPIs (heredan color con currentColor); cada entrada
-// es [tinte del chip, svg]. La clave es el kpi o, si no filtra, el iconKey.
-const KPI_ICONS = {
-  total:       ['', '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18"/>'],
-  draft:       ['', '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>'],
-  in_progress: ['k-teal', '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'],
-  finished:    ['k-green', '<path d="M20 6 9 17l-5-5"/>'],
-  extended:    ['k-amber', '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M16 3v4M8 3v4"/>'],
-  overdue:     ['k-red', '<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/>'],
-  win:         ['k-teal', '<path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/>'],
-  dur:         ['', '<path d="M6 3h12M6 21h12M8 3v4l4 5 4-5V3M8 21v-4l4-5 4 5v4"/>'],
-};
-function metricTile(value, label, kpi, iconKey) {
-  const [tint, paths] = KPI_ICONS[iconKey || kpi] || KPI_ICONS.total;
-  const icon = `<span class="kico ${tint}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg></span>`;
+function metricTile(value, label, kpi) {
   const active = kpi && isKpiActive(kpi);
   const attrs = kpi ? ` data-kpi="${kpi}"${active ? ' class="metric active"' : ' class="metric"'}` : ' class="metric metric-static"';
-  return `<div${attrs}>${icon}<div class="metric-txt"><div class="metric-val">${value}</div><div class="metric-lbl">${label}</div></div></div>`;
+  return `<div${attrs}><div class="metric-val">${value}</div><div class="metric-lbl">${label}</div></div>`;
 }
 // ¿El filtro actual corresponde a este KPI? (para resaltar el tile activo)
 function isKpiActive(kpi) {
@@ -177,8 +147,8 @@ function renderMetrics(admin) {
     metricTile(active.length, pick('Total', 'Total'), 'total') +
     STATUSES.map((s) => metricTile(byStatus[s.id], pick(s), s.id)).join('') +
     metricTile(`<span class="${overdue ? 'metric-warn' : ''}">${overdue}</span>`, pick('Overdue', 'Vencidas'), 'overdue') +
-    metricTile(winRate, pick('Win rate', 'Tasa de éxito'), null, 'win') +
-    metricTile(avg, pick('Avg. duration', 'Duración media'), null, 'dur');
+    metricTile(winRate, pick('Win rate', 'Tasa de éxito')) +
+    metricTile(avg, pick('Avg. duration', 'Duración media'));
 
   // Pinchar un KPI filtra la lista por ese criterio.
   el.querySelectorAll('[data-kpi]').forEach((tile) => {
@@ -334,19 +304,17 @@ function paint() {
 
     let action = '';
     if (!isDemo()) {
-      const ARCHIVE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18v4H3z"/><path d="M5 9v10h14V9"/><path d="M10 13h4"/></svg>';
-      const RESTORE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.6-6.4"/><path d="M3 4v5h5"/></svg>';
       if (filters.archived) {
         const left = daysUntilPurge(r);
-        action = `<button class="lt-act" data-restore="${r.id}" title="${pick('Restore', 'Restaurar')}">${RESTORE_SVG}</button>`
+        action = `<button class="lt-act" data-restore="${r.id}" title="${pick('Restore', 'Restaurar')}">↩</button>`
           + `<span class="purge-note">${pick('deletes in', 'se borra en')} ${left}${pick('d', 'd')}</span>`;
       } else {
-        action = `<button class="lt-act" data-archive="${r.id}" title="${pick('Archive', 'Archivar')}">${ARCHIVE_SVG}</button>`;
+        action = `<button class="lt-act" data-archive="${r.id}" title="${pick('Archive', 'Archivar')}">🗄</button>`;
       }
     }
 
     return `<div class="${cls} lt-item${r.archived_at ? ' lt-archived' : ''}" data-id="${r.id}">
-        <div class="lt-c lt-co">${monogram(r.title || r.company)}<span class="lt-name">${name}${sub}</span></div>
+        <div class="lt-c lt-name">${name}${sub}</div>
         ${adminCols}
         <div class="lt-c t-num">${fmtDate(r.kickoff_date)}</div>
         ${endCell}

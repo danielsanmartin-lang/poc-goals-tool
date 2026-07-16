@@ -12,20 +12,10 @@ import { mountDealPicker } from './dealpicker.js';
 import { exportToDeal } from './hubspot.js';
 import { initTheme } from './theme.js';
 
-// Iniciales para el avatar de la topbar ("Daniel San Martín" → "DS").
-function initials(s) {
-  const t = String(s || '').trim();
-  if (!t) return '';
-  const parts = t.split(/[\s._@-]+/).filter(Boolean);
-  return (((parts[0] || '')[0] || '') + ((parts[1] || '')[0] || (parts[0] || '')[1] || '')).toUpperCase();
-}
-
 function updateChrome() {
   const p = getProfile();
   const emailEl = document.getElementById('userEmail');
-  if (emailEl) emailEl.textContent = p ? (p.full_name || p.email) : '';
-  const avEl = document.getElementById('userAvatar');
-  if (avEl) avEl.textContent = p ? initials(p.full_name || p.email) : '';
+  if (emailEl) emailEl.textContent = p ? p.email : '';
   const adminBtn = document.getElementById('navAdmin');
   if (adminBtn) adminBtn.hidden = !isAdmin();
   const demoBadge = document.getElementById('demoBadge');
@@ -59,16 +49,6 @@ function renderCompleteness() {
     ? pick('Ready to export', 'Listo para exportar')
     : pick('Missing', 'Faltan') + ': ' + items.filter((i) => !i.ok).map((i) => i.label).join(', ');
   el.innerHTML = `<div class="cm-bar"><span style="width:${pct}%"></span></div><span class="cm-text">${text}</span>`;
-
-  // Refleja el mismo % en el anillo del hero y en la barra del riel lateral.
-  const pctEl = document.getElementById('dbRingPct');
-  if (pctEl) pctEl.textContent = pct + '%';
-  const fg = document.getElementById('dbRingFg');
-  if (fg) fg.style.strokeDashoffset = String(194.8 * (1 - pct / 100));
-  const rb = document.getElementById('railBar');
-  if (rb) rb.style.width = pct + '%';
-  const rt = document.getElementById('railTxt');
-  if (rt) rt.textContent = pct + '% ' + pick('complete', 'completado');
 }
 // Devuelve true si se puede exportar; si falta algo, pide confirmación.
 function confirmIfIncomplete() {
@@ -224,29 +204,6 @@ function wireChrome() {
     if (window.history.length > 1) window.history.back();
     else location.hash = '#/list';
   });
-
-  // Riel de secciones del detalle: clic = scroll suave, scroll-spy = resaltado.
-  const rail = document.getElementById('pocRail');
-  if (rail) {
-    const links = rail.querySelectorAll('[data-sec]');
-    links.forEach((a) => a.addEventListener('click', (e) => {
-      e.preventDefault();
-      const s = document.getElementById(a.dataset.sec);
-      if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }));
-    if ('IntersectionObserver' in window) {
-      const spy = new IntersectionObserver((entries) => {
-        entries.forEach((en) => {
-          if (!en.isIntersecting) return;
-          links.forEach((l) => l.classList.toggle('on', l.dataset.sec === en.target.id));
-        });
-      }, { rootMargin: '-15% 0px -70% 0px' });
-      links.forEach((a) => {
-        const s = document.getElementById(a.dataset.sec);
-        if (s) spy.observe(s);
-      });
-    }
-  }
 
   // Botones del formulario de PoC
   document.getElementById('formSave').addEventListener('click', () => saveNow());
