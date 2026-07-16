@@ -17,44 +17,59 @@
 <!-- ══ TOPBAR ══ -->
 <div class="topbar" id="topbar" style="display:none;">
   <div class="tb-left">
-    <img class="tb-logo" src="https://cdn.prod.website-files.com/693ae485cbe2697b54f4858b/6957d6d0d0cbf4f8410ec8cd_zepo_brand_logo_white.svg" alt="Zepo"
-      onerror="this.style.display='none';document.getElementById('lf').style.display='block'">
-    <span id="lf" style="display:none;font-size:17px;font-weight:800;color:white;letter-spacing:-.02em;">zepo<span style="color:var(--teal)">.</span></span>
-    <div class="tb-sep"></div>
-    <button class="hbtn hbtn-ghost" id="navHome" data-en="Home" data-es="Inicio">Home</button>
-    <button class="hbtn hbtn-ghost" id="navProfile" data-en="Profile" data-es="Perfil">Profile</button>
-    <button class="hbtn hbtn-admin only-admin" id="navAdmin" hidden data-en="Admin" data-es="Admin">Admin</button>
+    <span class="tb-logo-txt">zepo<b>.</b></span>
+    <nav class="mnav">
+      <button class="hbtn" id="navHome" data-en="Home" data-es="Inicio">Home</button>
+      <button class="hbtn" id="navProfile" data-en="Profile" data-es="Perfil">Profile</button>
+      <button class="hbtn hbtn-admin only-admin" id="navAdmin" hidden data-en="Admin" data-es="Admin">Admin</button>
+    </nav>
   </div>
   <div class="tb-right">
-    <button class="hbtn hbtn-ghost hbtn-icon" id="themeToggle" type="button" aria-label="Toggle theme"></button>
+    <button class="hbtn-icon" id="themeToggle" type="button" aria-label="Toggle theme"></button>
     <span class="demo-badge" id="demoBadge" hidden data-en="DEMO · read only" data-es="DEMO · solo lectura">DEMO · read only</span>
-    <span class="tb-user" id="userEmail"></span>
+    <span class="muser"><span class="avatar" id="userAvatar" aria-hidden="true"></span><span class="tb-user" id="userEmail"></span></span>
     <button class="hbtn hbtn-ghost" id="logoutBtn" data-en="Log out" data-es="Salir">Log out</button>
   </div>
 </div>
 
-<!-- ══ LOGIN ══ -->
-<div id="view-login" class="auth-wrap" style="display:none;">
-  <div class="auth-card">
-    <div class="auth-logo">zepo<span style="color:var(--teal)">.</span></div>
-    <div class="auth-title" data-en="PoC Goals Tool" data-es="PoC Goals Tool">PoC Goals Tool</div>
-    <div class="auth-sub" data-en="Sign in to continue" data-es="Inicia sesión para continuar">Sign in to continue</div>
-    <form id="loginForm" autocomplete="on">
-      <div class="auth-field">
-        <label data-en="Email" data-es="Correo">Email</label>
-        <input type="email" id="loginEmail" required autocomplete="username" placeholder="name@zepo.app">
+<!-- ══ LOGIN (pantalla dividida: marca + formulario) ══ -->
+<div id="view-login" class="auth-wrap auth-split" style="display:none;">
+  <div class="lg-brand" aria-hidden="true">
+    <div class="lg-logo">zepo<b>.</b></div>
+    <div class="lg-mid">
+      <div class="lg-eyebrow">PoC Goals Tool</div>
+      <h1 class="lg-h" data-en="Every PoC, with its goals in writing." data-es="Cada PoC, con sus objetivos por escrito.">Every PoC, with its goals in writing.</h1>
+      <p class="lg-p" data-en="Success criteria, scope and timeline agreed at kickoff — ready to export and share with your customer." data-es="Criterios de éxito, alcance y calendario acordados en el kickoff — listos para exportar y compartir con el cliente.">Success criteria, scope and timeline agreed at kickoff — ready to export and share with your customer.</p>
+      <div class="lg-vecs">
+        <div class="lg-vec"><span class="lg-vp">PHISHING</span><div class="lg-vn">Email</div><div class="lg-vd" data-en="Realistic campaigns to target users" data-es="Campañas realistas a usuarios objetivo">Realistic campaigns to target users</div></div>
+        <div class="lg-vec"><span class="lg-vp">VISHING</span><div class="lg-vn" data-en="AI voice" data-es="Voz con IA">AI voice</div><div class="lg-vd" data-en="AI social-engineering calls" data-es="Llamadas de ingeniería social con IA">AI social-engineering calls</div></div>
+        <div class="lg-vec"><span class="lg-vp">SMISHING</span><div class="lg-vn">SMS</div><div class="lg-vd" data-en="Social engineering by text" data-es="Ingeniería social por mensaje">Social engineering by text</div></div>
       </div>
-      <div class="auth-field">
-        <label data-en="Password" data-es="Contraseña">Password</label>
-        <div class="pw-wrap">
-          <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••">
-          <button type="button" class="pw-eye" data-eye="loginPassword" aria-label="Show password"></button>
+    </div>
+    <div class="lg-foot">PoC Kickoff Agreement — Confidential</div>
+  </div>
+  <div class="auth-panel">
+    <div class="auth-card">
+      <div class="auth-logo">zepo<span style="color:var(--teal)">.</span></div>
+      <div class="auth-title" data-en="Welcome back" data-es="Bienvenido de nuevo">Welcome back</div>
+      <div class="auth-sub" data-en="Sign in to continue" data-es="Inicia sesión para continuar">Sign in to continue</div>
+      <form id="loginForm" autocomplete="on">
+        <div class="auth-field">
+          <label data-en="Email" data-es="Correo">Email</label>
+          <input type="email" id="loginEmail" required autocomplete="username" placeholder="name@zepo.app">
         </div>
-      </div>
-      <div class="auth-err" id="loginErr" hidden></div>
-      <button type="submit" class="auth-btn" id="loginBtn" data-en="Sign in" data-es="Entrar">Sign in</button>
-    </form>
-    <div class="auth-note" data-en="Access is by invitation only. Contact your admin to get an account." data-es="El acceso es solo por invitación. Contacta con tu admin para obtener una cuenta.">Access is by invitation only. Contact your admin to get an account.</div>
+        <div class="auth-field">
+          <label data-en="Password" data-es="Contraseña">Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••">
+            <button type="button" class="pw-eye" data-eye="loginPassword" aria-label="Show password"></button>
+          </div>
+        </div>
+        <div class="auth-err" id="loginErr" hidden></div>
+        <button type="submit" class="auth-btn" id="loginBtn" data-en="Sign in" data-es="Entrar">Sign in</button>
+      </form>
+      <div class="auth-note" data-en="Access is by invitation only. Contact your admin to get an account." data-es="El acceso es solo por invitación. Contacta con tu admin para obtener una cuenta.">Access is by invitation only. Contact your admin to get an account.</div>
+    </div>
   </div>
 </div>
 
@@ -157,7 +172,7 @@
     <button class="xbtn" id="nuCreate" style="margin-top:6px;"><span data-en="Create user" data-es="Crear usuario">Create user</span></button>
   </div>
 
-  <div class="stitle" style="margin-top:20px;" data-en="Users" data-es="Usuarios">Users</div>
+  <div class="stitle" style="margin-top:22px;" data-en="Users" data-es="Usuarios">Users</div>
   <div class="list-table" id="admin-users"></div>
 </div>
 
@@ -220,7 +235,22 @@
 </div>
 
 <!-- ══ POC DETAIL (formulario) ══ -->
-<div id="view-poc" class="page" style="display:none;">
+<div id="view-poc" class="page page-poc" style="display:none;">
+
+  <!-- Riel de navegación por secciones (solo pantallas anchas; no-export) -->
+  <aside class="rail no-export" id="pocRail" aria-label="Sections">
+    <div class="rail-t" data-en="Sections" data-es="Secciones">Sections</div>
+    <a class="rl" data-sec="sec-contacts" href="#"><i>1</i><span data-en="Contacts" data-es="Contactos">Contacts</span></a>
+    <a class="rl" data-sec="sec-objectives" href="#"><i>2</i><span data-en="Objectives & scope" data-es="Objetivos y alcance">Objectives &amp; scope</span></a>
+    <a class="rl" data-sec="sec-plan" href="#"><i>3</i><span data-en="Simulation plan" data-es="Plan de simulaciones">Simulation plan</span></a>
+    <a class="rl" data-sec="sec-precheck" href="#"><i>4</i><span data-en="Pre-check" data-es="Pre-check">Pre-check</span></a>
+    <a class="rl" data-sec="sec-timeline" href="#"><i>5</i><span data-en="Timeline" data-es="Timeline">Timeline</span></a>
+    <a class="rl" data-sec="sec-outcome" href="#"><i>✦</i><span data-en="Outcome" data-es="Resultado">Outcome</span></a>
+    <a class="rl" data-sec="sec-notes" href="#"><i>✎</i><span data-en="Internal notes" data-es="Notas internas">Internal notes</span></a>
+    <div class="rail-prog"><span id="railTxt"></span><div class="rail-bar"><span id="railBar"></span></div></div>
+  </aside>
+
+  <div class="poc-main">
 
   <button class="back-btn" id="pocBack" type="button">← <span data-en="Back" data-es="Atrás">Back</span></button>
 
@@ -237,9 +267,21 @@
   </div>
 
   <div class="doc-banner">
-    <div class="db-eye" data-en="PoC Kickoff Agreement" data-es="Acuerdo de Inicio de PoC">PoC Kickoff Agreement</div>
-    <div class="db-title" data-en="Welcome to your Zepo PoC" data-es="Bienvenido a tu PoC de Zepo">Welcome to your Zepo PoC</div>
-    <div class="db-sub" data-en="This document captures everything we agreed during today's kickoff — objectives, use cases, scope, and next steps." data-es="Este documento recoge todo lo acordado durante el kick-off: objetivos, casos de uso, alcance y próximos pasos.">This document captures everything we agreed during today's kickoff — objectives, use cases, scope, and next steps.</div>
+    <div class="db-top">
+      <div>
+        <div class="db-eye" data-en="PoC Kickoff Agreement" data-es="Acuerdo de Inicio de PoC">PoC Kickoff Agreement</div>
+        <div class="db-title" id="topTitle" data-en="Welcome to your Zepo PoC" data-es="Bienvenido a tu PoC de Zepo">Welcome to your Zepo PoC</div>
+        <div class="db-sub" data-en="This document captures everything we agreed during today's kickoff — objectives, use cases, scope, and next steps." data-es="Este documento recoge todo lo acordado durante el kick-off: objetivos, casos de uso, alcance y próximos pasos.">This document captures everything we agreed during today's kickoff — objectives, use cases, scope, and next steps.</div>
+      </div>
+      <div class="db-ring" aria-hidden="true">
+        <svg width="76" height="76" viewBox="0 0 76 76">
+          <defs><linearGradient id="dbRingGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0FB0A6"/><stop offset="1" stop-color="#41DED6"/></linearGradient></defs>
+          <circle class="bgc" cx="38" cy="38" r="31" fill="none" stroke-width="6"/>
+          <circle class="fgc" id="dbRingFg" cx="38" cy="38" r="31" fill="none" stroke-width="6" stroke-dasharray="194.8" stroke-dashoffset="194.8"/>
+        </svg>
+        <b><span id="dbRingPct">0%</span><small data-en="complete" data-es="completo">complete</small></b>
+      </div>
+    </div>
 
     <div class="status-row">
       <span class="db-lbl" data-en="Status" data-es="Estado">Status</span>
@@ -264,8 +306,8 @@
   </div>
 
   <!-- 1. CONTACTS -->
-  <div class="section">
-    <div class="stitle" data-en="1 · Contacts" data-es="1 · Contactos">1 · Contacts</div>
+  <div class="section" id="sec-contacts">
+    <div class="stitle" data-n="1" data-en="Contacts" data-es="Contactos">Contacts</div>
     <div class="card">
       <div id="contactsList"></div>
       <button class="add-btn" id="addContact" type="button"><span>＋</span><span data-en="Add contact" data-es="Añadir contacto">Add contact</span></button>
@@ -273,15 +315,15 @@
   </div>
 
   <!-- 2. OBJECTIVES + USE CASES + SCOPE -->
-  <div class="section">
-    <div class="stitle" data-en="2 · Objectives, use cases & scope" data-es="2 · Objetivos, casos de uso y alcance">2 · Objectives, use cases &amp; scope</div>
+  <div class="section" id="sec-objectives">
+    <div class="stitle" data-n="2" data-en="Objectives, use cases & scope" data-es="Objetivos, casos de uso y alcance">Objectives, use cases &amp; scope</div>
     <div class="card">
       <div class="field" style="margin-bottom:18px;">
         <label data-en="In your own words, what would a successful PoC look like?" data-es="Con sus propias palabras, ¿cómo sería una PoC exitosa?">In your own words, what would a successful PoC look like? <span class="req">*</span></label>
         <textarea data-bind="objective" placeholder="Please describe the outcomes or changes you expect to see by the end of the PoC…"></textarea>
       </div>
       <div style="margin-bottom:18px;">
-        <div style="font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;" data-en="Use cases to validate" data-es="Casos de uso a validar">Use cases to validate</div>
+        <div style="font-size:10.5px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;" data-en="Use cases to validate" data-es="Casos de uso a validar">Use cases to validate</div>
         <div class="uc-grid" id="ucGrid"></div>
       </div>
       <div class="scope-grid" style="margin-bottom:14px;">
@@ -302,8 +344,8 @@
   </div>
 
   <!-- 3. SIMULATION PLAN -->
-  <div class="section">
-    <div class="stitle" data-en="3 · Agreed simulation plan" data-es="3 · Plan de simulaciones acordado">3 · Agreed simulation plan</div>
+  <div class="section" id="sec-plan">
+    <div class="stitle" data-n="3" data-en="Agreed simulation plan" data-es="Plan de simulaciones acordado">Agreed simulation plan</div>
     <div class="card">
       <div class="vec-grid">
         <div class="vc" data-v="ph">
@@ -386,8 +428,8 @@
   </div>
 
   <!-- 4. PRE-CHECK -->
-  <div class="section">
-    <div class="stitle" data-en="4 · PoC pre-check" data-es="4 · Pre-check de la PoC">4 · PoC pre-check</div>
+  <div class="section" id="sec-precheck">
+    <div class="stitle" data-n="4" data-en="PoC pre-check" data-es="Pre-check de la PoC">PoC pre-check</div>
     <div class="card">
       <p style="font-size:12px;color:var(--ink3);margin-bottom:14px;" data-en="Confirm each item before the PoC launches. Mark ✓ Done or ✗ Blocked — blocked items show the associated risk." data-es="Confirma cada elemento antes de lanzar la PoC. Marca ✓ Listo o ✗ Bloqueado — los bloqueados mostrarán el riesgo asociado.">Confirm each item before the PoC launches. Mark ✓ Done or ✗ Blocked — blocked items show the associated risk.</p>
       <div class="pcheck-list" id="pcheckList"></div>
@@ -395,14 +437,14 @@
   </div>
 
   <!-- 5. TIMELINE -->
-  <div class="section">
-    <div class="stitle" data-en="5 · Agreed timeline" data-es="5 · Timeline acordado">5 · Agreed timeline</div>
+  <div class="section" id="sec-timeline">
+    <div class="stitle" data-n="5" data-en="Agreed timeline" data-es="Timeline acordado">Agreed timeline</div>
     <div class="card"><div class="tl-list" id="tlList"></div></div>
   </div>
 
   <!-- OUTCOME / CIERRE (interno; no se incluye en el PDF exportado) -->
-  <div class="section no-export">
-    <div class="stitle" data-en="Outcome / Closing" data-es="Resultado / Cierre">Outcome / Closing</div>
+  <div class="section no-export" id="sec-outcome">
+    <div class="stitle" data-n="✦" data-en="Outcome / Closing" data-es="Resultado / Cierre">Outcome / Closing</div>
     <div class="card">
       <div class="field">
         <label data-en="Verdict" data-es="Veredicto">Verdict</label>
@@ -416,8 +458,8 @@
   </div>
 
   <!-- INTERNAL NOTES (nunca se incluye en el PDF exportado) -->
-  <div class="section no-export">
-    <div class="stitle" data-en="Internal notes" data-es="Notas internas">Internal notes</div>
+  <div class="section no-export" id="sec-notes">
+    <div class="stitle" data-n="✎" data-en="Internal notes" data-es="Notas internas">Internal notes</div>
     <div class="card">
       <div class="field" style="margin-bottom:0;">
         <label data-en="Internal notes about this PoC" data-es="Notas internas sobre esta PoC">Internal notes about this PoC</label>
@@ -433,6 +475,8 @@
     <button class="xbtn" id="formExport" type="button">↓ <span data-en="Export" data-es="Exportar">Export</span></button>
     <button class="xbtn" id="formExportHs" type="button" style="display:none;">↑ <span data-en="Export to HubSpot" data-es="Exportar a HubSpot">Export to HubSpot</span></button>
   </div>
+
+  </div><!-- /.poc-main -->
 
 </div>
 

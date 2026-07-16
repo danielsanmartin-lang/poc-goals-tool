@@ -167,10 +167,10 @@ function buildPrecheck() {
       <div class="pcheck-content">
         <div class="pcheck-title">${pick(c.en, c.es)}</div>
         ${showRisk ? `<div class="pcheck-risk">⚠ ${pick(c.risk_en, c.risk_es)}</div>` : ''}
-        <div class="pcheck-toggle" style="margin-top:6px;">
-          <button class="pt-btn ${state === 'done' ? 'active-done' : ''}" type="button" data-check="${c.id}" data-val="done">${pick('✓ Done', '✓ Listo')}</button>
-          <button class="pt-btn ${state === 'blocked' ? 'active-blocked' : ''}" type="button" data-check="${c.id}" data-val="blocked">${pick('✗ Blocked', '✗ Bloqueado')}</button>
-        </div>
+      </div>
+      <div class="pcheck-toggle">
+        <button class="pt-btn ${state === 'done' ? 'active-done' : ''}" type="button" data-check="${c.id}" data-val="done">${pick('✓ Done', '✓ Listo')}</button>
+        <button class="pt-btn ${state === 'blocked' ? 'active-blocked' : ''}" type="button" data-check="${c.id}" data-val="blocked">${pick('✗ Blocked', '✗ Bloqueado')}</button>
       </div>`;
     list.appendChild(el);
   });
@@ -240,10 +240,11 @@ function wireVectorsOnce() {
 }
 
 // ── TÍTULO + RESUMEN ──────────────────────────────────────
+// Título del hero: el nombre de la empresa o, si aún no hay, la bienvenida.
 export function updateTitle() {
   const co = getPoc().company;
   const t = document.getElementById('topTitle');
-  if (t) t.textContent = co ? co + ' — PoC Kickoff' : 'PoC Kickoff Agreement';
+  if (t) t.textContent = co || pick('Welcome to your Zepo PoC', 'Bienvenido a tu PoC de Zepo');
 }
 
 // Línea "Preparado por" del banner: dueño de la PoC (implícito). Para una PoC
