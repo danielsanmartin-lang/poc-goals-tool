@@ -186,21 +186,6 @@
   </div>
 </div>
 
-<!-- ══ PDF PREVIEW (modal) ══ -->
-<div id="pdfPreviewOverlay" class="modal-overlay" hidden>
-  <div class="modal-card card preview-card">
-    <div class="preview-head">
-      <div class="admin-form-title" data-en="PDF preview" data-es="Vista previa del PDF">PDF preview</div>
-      <button class="pt-btn" id="pvClose" data-en="Close" data-es="Cerrar">Close</button>
-    </div>
-    <iframe id="pdfPreviewFrame" title="PDF preview"></iframe>
-    <div class="modal-actions">
-      <button class="pt-btn" id="pvDownload" data-en="Download PDF" data-es="Descargar PDF">Download PDF</button>
-      <button class="xbtn" id="pvHubspot" data-en="Send to HubSpot" data-es="Enviar a HubSpot">Send to HubSpot</button>
-    </div>
-  </div>
-</div>
-
 <!-- ══ PROFILE ══ -->
 <div id="view-profile" class="page" style="display:none;">
   <div class="list-head">
@@ -445,7 +430,6 @@
   <div class="form-actions">
     <div class="completeness" id="completeness"></div>
     <button class="fa-save" id="formSave" type="button"><span>💾</span> <span id="formSaveLbl" data-en="Save" data-es="Guardar">Save</span></button>
-    <button class="xbtn" id="formPreview" type="button">👁 <span data-en="Preview" data-es="Vista previa">Preview</span></button>
     <button class="xbtn" id="formExport" type="button">↓ <span data-en="Export" data-es="Exportar">Export</span></button>
     <button class="xbtn" id="formExportHs" type="button" style="display:none;">↑ <span data-en="Export to HubSpot" data-es="Exportar a HubSpot">Export to HubSpot</span></button>
   </div>

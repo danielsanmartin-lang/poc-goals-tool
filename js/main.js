@@ -121,65 +121,6 @@ async function exportToHubspot() {
   }
 }
 
-// ── Vista previa del PDF (overlay) ────────────────────────
-let previewUrl = null;
-let previewBlob = null;
-let previewName = 'PoC.pdf';
-
-async function openPreview() {
-  if (typeof window.html2pdf === 'undefined') { showToast('⚠ html2pdf ' + pick('not loaded', 'no cargado')); return; }
-  const btn = document.getElementById('formPreview');
-  const overlay = document.getElementById('pdfPreviewOverlay');
-  const frame = document.getElementById('pdfPreviewFrame');
-  if (btn) btn.disabled = true;
-  try {
-    const { blob, filename } = await buildPdfBlob();
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    previewBlob = blob;
-    previewName = filename;
-    previewUrl = URL.createObjectURL(blob);
-    frame.src = previewUrl;
-    const hsBtn = document.getElementById('pvHubspot');
-    if (hsBtn) hsBtn.style.display = (getPoc().deal_id && !isDemo()) ? '' : 'none';
-    overlay.hidden = false;
-  } catch (e) {
-    showToast('⚠ ' + (e.message || 'Error'));
-  } finally {
-    if (btn) btn.disabled = false;
-  }
-}
-function closePreview() {
-  const overlay = document.getElementById('pdfPreviewOverlay');
-  const frame = document.getElementById('pdfPreviewFrame');
-  if (overlay) overlay.hidden = true;
-  if (frame) frame.src = 'about:blank';
-  if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
-}
-function downloadPreview() {
-  if (!previewBlob) return;
-  const url = URL.createObjectURL(previewBlob);
-  const a = document.createElement('a');
-  a.href = url; a.download = previewName;
-  document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
-}
-async function previewToHubspot() {
-  const poc = getPoc();
-  if (!poc.id || !poc.deal_id || !previewBlob) return;
-  const btn = document.getElementById('pvHubspot');
-  if (btn) btn.disabled = true;
-  try {
-    const b64 = await blobToBase64(previewBlob);
-    await exportToDeal(poc.id, previewName, b64);
-    showToast(pick('Exported to HubSpot ✓', 'Exportado a HubSpot ✓'));
-    closePreview();
-  } catch (e) {
-    showToast('⚠ ' + (e.message || 'Error'));
-  } finally {
-    if (btn) btn.disabled = false;
-  }
-}
-
 // Aviso flotante de confirmación (se mantiene aunque cambie de vista).
 let toastTimer = null;
 function showToast(msg) {
@@ -266,15 +207,8 @@ function wireChrome() {
 
   // Botones del formulario de PoC
   document.getElementById('formSave').addEventListener('click', () => saveNow());
-  document.getElementById('formPreview').addEventListener('click', openPreview);
   document.getElementById('formExport').addEventListener('click', exportPDF);
   document.getElementById('formExportHs').addEventListener('click', exportToHubspot);
-
-  // Vista previa del PDF (overlay)
-  document.getElementById('pvClose').addEventListener('click', closePreview);
-  document.getElementById('pvDownload').addEventListener('click', downloadPreview);
-  document.getElementById('pvHubspot').addEventListener('click', previewToHubspot);
-  document.getElementById('pdfPreviewOverlay').addEventListener('click', (e) => { if (e.target.id === 'pdfPreviewOverlay') closePreview(); });
 
   // Medidor de completitud: se refresca en cada cambio del formulario.
   setOnChange(renderCompleteness);

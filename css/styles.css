@@ -424,8 +424,3 @@ body[data-view="poc"] .only-poc{display:inline-flex !important;}
 .lt-act{background:transparent;border:none;cursor:pointer;font-size:14px;opacity:.5;transition:opacity .12s;padding:4px;border-radius:6px;}
 .lt-act:hover{opacity:1;background:var(--teal-bg);}
 .purge-note{font-size:10px;color:var(--ink4);white-space:nowrap;margin-left:4px;}
-
-/* Vista previa del PDF */
-.preview-card{max-width:900px;width:92vw;}
-.preview-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-#pdfPreviewFrame{width:100%;height:70vh;border:1px solid var(--line);border-radius:var(--r);background:#fff;}
