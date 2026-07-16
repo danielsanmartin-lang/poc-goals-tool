@@ -313,7 +313,10 @@ body[data-view="poc"] .only-poc{display:inline-flex !important;}
   radial-gradient(560px 420px at 82% -10%,rgba(38,208,197,.28),transparent 62%),
   radial-gradient(640px 520px at -12% 108%,rgba(23,110,180,.35),transparent 60%),
   linear-gradient(160deg,#081A31 0%,#071527 55%,#06101E 100%);}
-.lg-brand::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(120,200,220,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(120,200,220,.05) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(720px 560px at 70% 30%,#000 30%,transparent 75%);mask-image:radial-gradient(720px 560px at 70% 30%,#000 30%,transparent 75%);pointer-events:none;}
+/* Fondo animado (red de partículas) del panel de marca — ver js/loginbg.js.
+   Sustituye la retícula estática; el contenido va por encima (z-index:1). */
+.lg-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;}
+.lg-logo,.lg-mid,.lg-foot{position:relative;z-index:1;}
 .lg-logo{font-size:22px;font-weight:800;letter-spacing:-.03em;}
 .lg-logo b{color:var(--heroteal);}
 .lg-mid{margin:auto 0;position:relative;}

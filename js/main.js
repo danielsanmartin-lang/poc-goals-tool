@@ -11,6 +11,7 @@ import { initProfileForms, renderSetup, renderProfile } from './profile.js';
 import { mountDealPicker } from './dealpicker.js';
 import { exportToDeal } from './hubspot.js';
 import { initTheme } from './theme.js';
+import { initLoginBg } from './loginbg.js';
 
 function updateChrome() {
   const p = getProfile();
@@ -284,6 +285,7 @@ function wireChrome() {
 async function init() {
   applyStatic();
   wireChrome();
+  initLoginBg();
   mountFormOnce();
   mountDealPicker();
   initRouter();
