@@ -12,6 +12,11 @@ import { mountDealPicker } from './dealpicker.js';
 import { exportToDeal } from './hubspot.js';
 import { initTheme } from './theme.js';
 import { initLoginBg } from './loginbg.js';
+import { startIdleTimer, idleExpired, clearIdle } from './idle.js';
+
+// Cierre de sesión automático tras 30 min de inactividad.
+const IDLE_MS = 30 * 60 * 1000;
+let idleTimer = null;
 
 function updateChrome() {
   const p = getProfile();
@@ -21,6 +26,24 @@ function updateChrome() {
   if (adminBtn) adminBtn.hidden = !isAdmin();
   const demoBadge = document.getElementById('demoBadge');
   if (demoBadge) demoBadge.hidden = !isDemo();
+}
+
+// ── Cierre de sesión por inactividad ─────────────────────────
+function startIdleWatch() {
+  if (idleTimer || !getProfile()) return;
+  idleTimer = startIdleTimer(IDLE_MS, onIdleTimeout);
+}
+function stopIdleWatch() {
+  if (idleTimer) { idleTimer.stop(); idleTimer = null; }
+}
+async function onIdleTimeout() {
+  stopIdleWatch();
+  clearIdle();
+  await signOut();
+  updateChrome();
+  location.hash = '';
+  route();
+  showToast(pick('Signed out after 30 min of inactivity.', 'Sesión cerrada tras 30 min de inactividad.'));
 }
 
 // Aplica el idioma guardado en el perfil (persistente entre dispositivos).
@@ -194,6 +217,8 @@ function wireChrome() {
   document.getElementById('navAdmin').addEventListener('click', () => { location.hash = '#/admin'; });
   document.getElementById('listNew').addEventListener('click', () => { location.hash = '#/new'; });
   document.getElementById('logoutBtn').addEventListener('click', async () => {
+    stopIdleWatch();
+    clearIdle();
     await signOut();
     updateChrome();
     location.hash = '';
@@ -249,6 +274,7 @@ function wireChrome() {
     applyProfileLanguage();
     updateChrome();
     route();
+    startIdleWatch();
   });
 
   // Cambio de contraseña provisional
@@ -300,15 +326,23 @@ async function init() {
 
   onAuthChange((event) => {
     if (event === 'SIGNED_OUT') {
+      stopIdleWatch();
       updateChrome();
       route();
     }
   });
 
   await loadProfile();
+  // Si la sesión persistía pero superó el límite de inactividad (p. ej. la
+  // pestaña estuvo cerrada > 30 min), se cierra antes de mostrar nada.
+  if (getProfile() && idleExpired(IDLE_MS)) {
+    clearIdle();
+    await signOut();
+  }
   applyProfileLanguage();
   updateChrome();
   route();
+  startIdleWatch(); // arranca solo si sigue habiendo sesión
 }
 
 if (document.readyState === 'loading') {
