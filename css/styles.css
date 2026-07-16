@@ -308,7 +308,7 @@ body[data-view="poc"] .only-poc{display:inline-flex !important;}
 .auth-note{font-size:11.5px;color:var(--ink4);margin-top:20px;line-height:1.5;text-align:center;}
 
 /* login: pantalla dividida (panel de marca + formulario) */
-.auth-split{padding:0;background:var(--bg);display:grid;grid-template-columns:1.12fr 1fr;align-items:stretch;}
+.auth-split{padding:0;background:#FFFFFF;display:grid;grid-template-columns:1.12fr 1fr;align-items:stretch;}
 .lg-brand{position:relative;display:flex;flex-direction:column;padding:48px 54px;color:#fff;overflow:hidden;background:
   radial-gradient(560px 420px at 82% -10%,rgba(38,208,197,.28),transparent 62%),
   radial-gradient(640px 520px at -12% 108%,rgba(23,110,180,.35),transparent 60%),
@@ -329,22 +329,25 @@ body[data-view="poc"] .only-poc{display:inline-flex !important;}
 .lg-vn{font-size:12.5px;font-weight:700;}
 .lg-vd{font-size:10.5px;color:rgba(226,240,248,.5);line-height:1.45;margin-top:2px;}
 .lg-foot{position:relative;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(226,240,248,.35);}
-/* Lado derecho: fondo oscuro a juego con el panel de marca + tarjeta glass.
-   El login queda como una pantalla oscura coherente (en ambos temas), así
-   que el texto y los campos de ESTA tarjeta van en claro, no con los tokens
-   del tema. Solo afecta al login (.auth-panel no existe en pwchange/setup). */
-.auth-panel{display:flex;align-items:center;justify-content:center;padding:48px 40px;background:linear-gradient(210deg,#0A1E38 0%,#071528 55%,#050E1B 100%);}
-.auth-panel .auth-card{max-width:372px;padding:38px 34px;background:rgba(255,255,255,.045);border:1px solid rgba(120,200,220,.12);border-radius:20px;box-shadow:0 30px 70px -30px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.05);}
+/* El login NO sigue el tema día/noche: todos sus colores son fijos.
+   Lado derecho SIEMPRE blanco; el formulario va en una tarjeta azul (navy,
+   a juego con el panel de marca), con texto y campos en claro. Todo scopeado
+   a .auth-panel → no afecta a pwchange/setup, que sí siguen el tema. */
+.auth-panel{display:flex;align-items:center;justify-content:center;padding:48px 40px;background:#FFFFFF;}
+.auth-panel .auth-card{max-width:372px;padding:38px 34px;background:linear-gradient(160deg,#0A2038 0%,#071527 60%,#06111F 100%);border:1px solid rgba(120,200,220,.14);border-radius:20px;box-shadow:0 30px 60px -28px rgba(11,31,58,.45),0 4px 14px -8px rgba(11,31,58,.22);}
 .auth-panel .auth-logo{color:#F2F7FB;}
+.auth-panel .auth-logo span{color:#41DED6 !important;} /* punto de marca, fijo */
 .auth-panel .auth-title{color:#FFFFFF;}
-.auth-panel .auth-sub{color:rgba(226,240,248,.55);}
+.auth-panel .auth-sub{color:rgba(226,240,248,.6);}
 .auth-panel .auth-field label{color:rgba(180,198,216,.75);}
-.auth-panel .auth-field input{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);color:#EAF1F8;}
-.auth-panel .auth-field input::placeholder{color:rgba(226,240,248,.3);}
-.auth-panel .auth-field input:focus{border-color:var(--teal);background:rgba(255,255,255,.07);box-shadow:0 0 0 4px rgba(47,217,207,.15);}
-.auth-panel .auth-note{color:rgba(226,240,248,.4);}
+.auth-panel .auth-field input{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:#EAF1F8;}
+.auth-panel .auth-field input::placeholder{color:rgba(226,240,248,.32);}
+.auth-panel .auth-field input:focus{border-color:#2BD4C8;background:rgba(255,255,255,.09);box-shadow:0 0 0 4px rgba(43,212,200,.18);}
+.auth-panel .auth-note{color:rgba(226,240,248,.45);}
 .auth-panel .pw-eye{color:rgba(226,240,248,.5);}
-.auth-panel .pw-eye.on{color:var(--heroteal);}
+.auth-panel .pw-eye.on{color:#41DED6;}
+/* Botón fijo (no depende del tema): mismo gradiente teal en día y noche. */
+.auth-panel .auth-btn{background:linear-gradient(135deg,#0FB0A6,#26D0C5 60%,#41DED6);color:#04302B;}
 /* En pantallas estrechas el login vuelve a una sola columna (solo formulario). */
 @media (max-width:860px){
   .auth-split{grid-template-columns:1fr;}
