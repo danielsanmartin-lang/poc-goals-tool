@@ -23,6 +23,8 @@ export function emptyPoc() {
     },
     precheck: {}, // { [checkId]: 'done' | 'blocked' }
     timeline: [], // [{ date, note }] alineado por índice con TIMELINE
+    outcome: '', // veredicto de cierre: 'success' | 'neutral' | 'lost' | ''
+    outcome_notes: '', // qué ha pasado (texto libre, interno)
     comments: '',
     deal_id: '', // enlace al deal de HubSpot (opcional)
   };

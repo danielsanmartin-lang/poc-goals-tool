@@ -16,6 +16,8 @@ function toRow(poc) {
     users_in_scope: poc.users !== '' && poc.users != null ? parseInt(poc.users, 10) : null,
     scope_in: poc.scope_in || null,
     scope_out: poc.scope_out || null,
+    outcome: poc.outcome || null,
+    outcome_notes: poc.outcome_notes || null,
     comments: poc.comments || null,
     contacts: poc.contacts || [],
     use_cases: poc.use_cases || [],
@@ -46,6 +48,8 @@ export function fromRow(row) {
     vectors: row.vectors && Object.keys(row.vectors).length ? row.vectors : undefined,
     precheck: row.precheck || {},
     timeline: Array.isArray(row.timeline) ? row.timeline : [],
+    outcome: row.outcome || '',
+    outcome_notes: row.outcome_notes || '',
     comments: row.comments || '',
     title: row.title || '',
     deal_id: row.deal_id || '',
@@ -56,7 +60,7 @@ export function fromRow(row) {
 export async function listPocs() {
   const { data, error } = await sb
     .from('pocs')
-    .select('id, title, company, status, kickoff_date, end_date, ae_name, ae_id, users_in_scope, updated_at, owner:profiles!ae_id(full_name, job_title, department)')
+    .select('id, title, company, status, kickoff_date, end_date, ae_name, ae_id, users_in_scope, outcome, archived_at, updated_at, owner:profiles!ae_id(full_name, job_title, department)')
     .order('updated_at', { ascending: false });
   if (error) throw error;
   return data;
@@ -85,5 +89,17 @@ export async function savePoc(poc) {
 
 export async function deletePoc(id) {
   const { error } = await sb.from('pocs').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// Archiva una PoC (soft-delete). Un job de pg_cron la borra a los 30 días.
+export async function archivePoc(id) {
+  const { error } = await sb.from('pocs').update({ archived_at: new Date().toISOString() }).eq('id', id);
+  if (error) throw error;
+}
+
+// Restaura una PoC archivada (vuelve a la lista activa).
+export async function restorePoc(id) {
+  const { error } = await sb.from('pocs').update({ archived_at: null }).eq('id', id);
   if (error) throw error;
 }

@@ -3,7 +3,7 @@
 import { setLang, applyStatic, getLang, pick, onLangChange } from './i18n.js';
 import { getPoc } from './state.js';
 import { loadProfile, signIn, signOut, changePassword, getProfile, isAdmin, isDemo, onAuthChange, saveLanguage } from './auth.js';
-import { mountFormOnce, saveNow, setOnSaved } from './form.js';
+import { mountFormOnce, saveNow, setOnSaved, setOnChange } from './form.js';
 import { route, initRouter } from './router.js';
 import { renderList } from './list.js';
 import { renderAdmin } from './admin.js';
@@ -28,41 +28,154 @@ function applyProfileLanguage() {
   if (p && p.language && p.language !== getLang()) setLang(p.language);
 }
 
+// ── Medidor de completitud ────────────────────────────────
+// Requisitos mínimos para dar una PoC por "lista para exportar".
+function completenessItems(poc) {
+  return [
+    { ok: !!(poc.company && poc.company.trim()), label: pick('Company', 'Empresa') },
+    { ok: !!(poc.objective && poc.objective.trim()), label: pick('Objective', 'Objetivo') },
+    { ok: Array.isArray(poc.use_cases) && poc.use_cases.length > 0, label: pick('At least one use case', 'Al menos un caso de uso') },
+  ];
+}
+function renderCompleteness() {
+  const el = document.getElementById('completeness');
+  if (!el) return;
+  const items = completenessItems(getPoc());
+  const done = items.filter((i) => i.ok).length;
+  const pct = Math.round((done / items.length) * 100);
+  const ready = done === items.length;
+  el.className = 'completeness' + (ready ? ' ready' : '');
+  const text = ready
+    ? pick('Ready to export', 'Listo para exportar')
+    : pick('Missing', 'Faltan') + ': ' + items.filter((i) => !i.ok).map((i) => i.label).join(', ');
+  el.innerHTML = `<div class="cm-bar"><span style="width:${pct}%"></span></div><span class="cm-text">${text}</span>`;
+}
+// Devuelve true si se puede exportar; si falta algo, pide confirmación.
+function confirmIfIncomplete() {
+  const missing = completenessItems(getPoc()).filter((i) => !i.ok).map((i) => i.label);
+  if (!missing.length) return true;
+  return confirm(
+    pick('This PoC is missing: ', 'A esta PoC le falta: ') + missing.join(', ') + '.\n' +
+    pick('Export anyway?', '¿Exportar de todas formas?'),
+  );
+}
+
 function exportPDF() {
+  if (!confirmIfIncomplete()) return;
   const co = getPoc().company || 'PoC';
   document.title = 'PoC Kickoff Agreement — ' + co + ' — Zepo';
   window.print();
 }
 
-// Genera el PDF de la PoC (con html2pdf) y lo sube al deal enlazado en HubSpot.
+// ── Generación del PDF (html2pdf) ─────────────────────────
+// Aplica la clase `exporting` (oculta controles + notas internas + outcome, y
+// fuerza el aspecto claro de marca) y devuelve el PDF como blob.
+async function buildPdfBlob() {
+  const poc = getPoc();
+  const view = document.getElementById('view-poc');
+  const safeCo = (poc.company || 'Zepo').replace(/[^\w.\- ]+/g, '_').trim();
+  const filename = `PoC-${safeCo}.pdf`;
+  const opt = {
+    margin: 8,
+    filename,
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+  };
+  view.classList.add('exporting');
+  try {
+    const blob = await window.html2pdf().set(opt).from(view).outputPdf('blob');
+    return { blob, filename };
+  } finally {
+    view.classList.remove('exporting');
+  }
+}
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(String(fr.result).split(',')[1] || '');
+    fr.onerror = reject;
+    fr.readAsDataURL(blob);
+  });
+}
+
+// Genera el PDF de la PoC y lo sube al deal enlazado en HubSpot.
 async function exportToHubspot() {
   const poc = getPoc();
   if (!poc.id) { showToast(pick('Save the PoC first.', 'Guarda la PoC primero.')); return; }
   if (!poc.deal_id) { showToast(pick('Link a HubSpot deal first.', 'Enlaza un deal de HubSpot primero.')); return; }
   if (typeof window.html2pdf === 'undefined') { showToast('⚠ html2pdf ' + pick('not loaded', 'no cargado')); return; }
+  if (!confirmIfIncomplete()) return;
 
   const btn = document.getElementById('formExportHs');
-  const view = document.getElementById('view-poc');
   if (btn) btn.disabled = true;
-  view.classList.add('exporting'); // oculta controles durante la captura
   try {
-    const safeCo = (poc.company || 'Zepo').replace(/[^\w.\- ]+/g, '_').trim();
-    const filename = `PoC-${safeCo}.pdf`;
-    const opt = {
-      margin: 8,
-      filename,
-      image: { type: 'jpeg', quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    };
-    const dataUri = await window.html2pdf().set(opt).from(view).outputPdf('datauristring');
-    const b64 = String(dataUri).split(',')[1] || '';
+    const { blob, filename } = await buildPdfBlob();
+    const b64 = await blobToBase64(blob);
     await exportToDeal(poc.id, filename, b64);
     showToast(pick('Exported to HubSpot ✓', 'Exportado a HubSpot ✓'));
   } catch (e) {
     showToast('⚠ ' + (e.message || 'Error'));
   } finally {
-    view.classList.remove('exporting');
+    if (btn) btn.disabled = false;
+  }
+}
+
+// ── Vista previa del PDF (overlay) ────────────────────────
+let previewUrl = null;
+let previewBlob = null;
+let previewName = 'PoC.pdf';
+
+async function openPreview() {
+  if (typeof window.html2pdf === 'undefined') { showToast('⚠ html2pdf ' + pick('not loaded', 'no cargado')); return; }
+  const btn = document.getElementById('formPreview');
+  const overlay = document.getElementById('pdfPreviewOverlay');
+  const frame = document.getElementById('pdfPreviewFrame');
+  if (btn) btn.disabled = true;
+  try {
+    const { blob, filename } = await buildPdfBlob();
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewBlob = blob;
+    previewName = filename;
+    previewUrl = URL.createObjectURL(blob);
+    frame.src = previewUrl;
+    const hsBtn = document.getElementById('pvHubspot');
+    if (hsBtn) hsBtn.style.display = (getPoc().deal_id && !isDemo()) ? '' : 'none';
+    overlay.hidden = false;
+  } catch (e) {
+    showToast('⚠ ' + (e.message || 'Error'));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+function closePreview() {
+  const overlay = document.getElementById('pdfPreviewOverlay');
+  const frame = document.getElementById('pdfPreviewFrame');
+  if (overlay) overlay.hidden = true;
+  if (frame) frame.src = 'about:blank';
+  if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+}
+function downloadPreview() {
+  if (!previewBlob) return;
+  const url = URL.createObjectURL(previewBlob);
+  const a = document.createElement('a');
+  a.href = url; a.download = previewName;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+async function previewToHubspot() {
+  const poc = getPoc();
+  if (!poc.id || !poc.deal_id || !previewBlob) return;
+  const btn = document.getElementById('pvHubspot');
+  if (btn) btn.disabled = true;
+  try {
+    const b64 = await blobToBase64(previewBlob);
+    await exportToDeal(poc.id, previewName, b64);
+    showToast(pick('Exported to HubSpot ✓', 'Exportado a HubSpot ✓'));
+    closePreview();
+  } catch (e) {
+    showToast('⚠ ' + (e.message || 'Error'));
+  } finally {
     if (btn) btn.disabled = false;
   }
 }
@@ -145,10 +258,27 @@ function wireChrome() {
     route();
   });
 
+  // Volver a la pantalla anterior desde el detalle de PoC.
+  document.getElementById('pocBack').addEventListener('click', () => {
+    if (window.history.length > 1) window.history.back();
+    else location.hash = '#/list';
+  });
+
   // Botones del formulario de PoC
   document.getElementById('formSave').addEventListener('click', () => saveNow());
+  document.getElementById('formPreview').addEventListener('click', openPreview);
   document.getElementById('formExport').addEventListener('click', exportPDF);
   document.getElementById('formExportHs').addEventListener('click', exportToHubspot);
+
+  // Vista previa del PDF (overlay)
+  document.getElementById('pvClose').addEventListener('click', closePreview);
+  document.getElementById('pvDownload').addEventListener('click', downloadPreview);
+  document.getElementById('pvHubspot').addEventListener('click', previewToHubspot);
+  document.getElementById('pdfPreviewOverlay').addEventListener('click', (e) => { if (e.target.id === 'pdfPreviewOverlay') closePreview(); });
+
+  // Medidor de completitud: se refresca en cada cambio del formulario.
+  setOnChange(renderCompleteness);
+
   setOnSaved((ok) => {
     const lbl = document.getElementById('formSaveLbl');
     if (!lbl) return;

@@ -3,7 +3,7 @@
 // - renderForm(): pinta todo LEYENDO del estado (se llama al abrir cada POC y
 //   al cambiar de idioma). Reconstruir desde el estado evita pérdidas de datos.
 
-import { USE_CASES, CHECKS, TIMELINE, STATUSES } from './data.js';
+import { USE_CASES, CHECKS, TIMELINE, STATUSES, OUTCOMES } from './data.js';
 import { pick, onLangChange } from './i18n.js';
 import { getPoc, getByPath, setByPath } from './state.js';
 import { savePoc } from './persistence.js';
@@ -19,8 +19,10 @@ function escAttr(s) {
 let saveTimer = null;
 let saving = false;
 let onSaved = null; // (ok, err?) => void
+let onChange = null; // () => void — notifica cada cambio (p. ej. medidor de completitud)
 
 export function setOnSaved(fn) { onSaved = fn; }
+export function setOnChange(fn) { onChange = fn; }
 
 async function doSave() {
   if (isDemo()) return; // modo demo: no se persiste nada
@@ -50,6 +52,7 @@ export async function saveNow() {
 
 function changed() {
   scheduleSave();
+  if (onChange) onChange();
 }
 
 // ── ESTADO ────────────────────────────────────────────────
@@ -63,6 +66,27 @@ function buildStatus() {
     b.dataset.st = s.id;
     b.textContent = pick(s);
     b.addEventListener('click', () => { getPoc().status = s.id; buildStatus(); changed(); });
+    wrap.appendChild(b);
+  });
+}
+
+// ── OUTCOME / CIERRE ──────────────────────────────────────
+// Veredicto de cierre (interno). Mismo patrón que buildStatus, pero pinta en
+// el cuerpo claro de la tarjeta (.oc-pill) y permite deseleccionar.
+function buildOutcome() {
+  const wrap = document.getElementById('outcomePills');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  OUTCOMES.forEach((o) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'oc-pill' + (getPoc().outcome === o.id ? ' on' : '');
+    b.dataset.oc = o.id;
+    b.textContent = pick(o);
+    b.addEventListener('click', () => {
+      getPoc().outcome = getPoc().outcome === o.id ? '' : o.id;
+      buildOutcome(); changed();
+    });
     wrap.appendChild(b);
   });
 }
@@ -268,6 +292,7 @@ export function renderForm() {
   buildUseCases();
   buildPrecheck();
   buildTimeline();
+  buildOutcome();
   applyVectors();
   updateTitle();
   setPreparedBy();
@@ -280,4 +305,6 @@ export function renderForm() {
   // "Exportar a HubSpot": solo si la PoC está enlazada a un deal (y no es demo).
   const exHs = document.getElementById('formExportHs');
   if (exHs) exHs.style.display = (getPoc().deal_id && !isDemo()) ? '' : 'none';
+
+  if (onChange) onChange(); // refresca el medidor de completitud al abrir la PoC
 }

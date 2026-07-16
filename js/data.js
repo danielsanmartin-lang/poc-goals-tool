@@ -74,6 +74,13 @@ export const STATUSES = [
   { id: 'extended',    en: 'Extended',    es: 'Extendido' },
 ];
 
+// Veredicto de cierre de la PoC (interno: no sale en el PDF del cliente).
+export const OUTCOMES = [
+  { id: 'success', en: 'Success', es: 'Éxito' },
+  { id: 'neutral', en: 'Neutral', es: 'Neutral' },
+  { id: 'lost',    en: 'Lost',    es: 'Perdida' },
+];
+
 // Puesto del usuario (perfil). Orden alfabético + "Otro" (texto libre) al final.
 // El valor almacenado en profiles.job_title es el string tal cual; si no está en
 // esta lista, la UI lo trata como "Otro" y muestra el texto guardado.
